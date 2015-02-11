@@ -13,6 +13,7 @@ class REST(object):
         r = requests.get(self._url.format(endpoint),
                          auth=self._creds,
                          timeout=timeout)
+        r.raise_for_status()
         return r.json()
 
     def _put(self, endpoint, config=None, timeout=None):
@@ -21,6 +22,7 @@ class REST(object):
                          auth=self._creds,
                          data=json.dumps(config),
                          timeout=timeout)
+        r.raise_for_status()
 
     @property
     def host(self):
