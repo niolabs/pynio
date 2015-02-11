@@ -1,4 +1,5 @@
 import requests
+import json
 
 
 class REST(object):
@@ -12,8 +13,14 @@ class REST(object):
         r = requests.get(self._url.format(endpoint),
                          auth=self._creds,
                          timeout=timeout)
-        print(r)
         return r.json()
+
+    def _put(self, endpoint, config=None, timeout=None):
+        config = config or {}
+        r = requests.put(self._url.format(endpoint),
+                         auth=self._creds,
+                         data=json.dumps(config),
+                         timeout=timeout)
 
     @property
     def host(self):

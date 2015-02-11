@@ -1,9 +1,9 @@
 import unittest
-from nioapi.service import Service
+from pynio.service import Service
 
 class TestService(unittest.TestCase):
 
         def test_service(self):
-            s = Service(None, {'name': 'name', 'type': 'type'})
+            s = Service('name', 'type')
             self.assertEqual(s.name, 'name')
             self.assertEqual(s.type, 'type')

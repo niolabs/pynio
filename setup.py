@@ -4,9 +4,9 @@ except ImportError:
     from distutils.core import setup
 
 config = {
-    name='nioapi',
+    name='pynio',
     version='0.1dev',
-    packages = ['nioapi'],
+    packages = ['pynio'],
     install_requires = [
         'requests'
     ],
