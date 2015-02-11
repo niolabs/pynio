@@ -29,12 +29,21 @@ class Service(object):
         self._instance._put(endpoint, config)
 
     def connect(self, blk1, blk2):
-        # TODO: this needs to add to the existing config instead of appending
-        # if the block is already in the service.
-        connection = {'name': blk1.name, 'receivers': [blk2.name]}
+        # initialize execution to an empty list if it doesn't already exist
         execution = self.config.get('execution', [])
-        execution.append(connection)
         self.config['execution'] = execution
+        # check if source block is already in config
+        connection = None
+        for blk in execution:
+            if blk.get('name') == blk1.name:
+                connection = blk
+                break
+        # if block exists, add the receiever, otherwise init connection
+        if connection:
+            connection.get('receivers').append(blk2.name)
+        else:
+            connection = {'name': blk1.name, 'receivers': [blk2.name]}
+            execution.append(connection)
 
     def start(self):
         """ Starts the nio Service. """
