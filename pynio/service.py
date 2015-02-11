@@ -97,9 +97,9 @@ class Service(object):
 
     def delete(self):
         '''Delete self from instance'''
-        self._instance.services.remove(self._name)
-        self._instance._put(
+        self._instance._delete(
             'services/{}'.format(self._name))
+        self._instance.services.remove(self._name)
         self._instance = None  # make sure it isn't used anymore
 
     @property

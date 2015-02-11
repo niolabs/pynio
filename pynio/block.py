@@ -43,8 +43,8 @@ class Block(object):
 
     def delete(self):
         '''Delete self from instance and services'''
-        self._instance.blocks.remove(self._name)
+        self._instance._delete('blocks/{}'.format(self._name))
         for s in self._instance.services.values():
             s._remove(self)
-        self._instance._delete('blocks/{}'.format(self._name))
+        self._instance.blocks.remove(self._name)
         self._instance = None  # make sure it isn't used anymore
