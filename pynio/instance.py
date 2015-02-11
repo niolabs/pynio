@@ -1,4 +1,4 @@
-from pynio.api_rest import REST
+from pynio.rest import REST
 from pynio.block import Block
 from pynio.service import Service
 
