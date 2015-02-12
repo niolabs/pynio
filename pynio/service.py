@@ -1,3 +1,5 @@
+from .block import Block
+
 class Service(object):
 
     def __init__(self, name, type='Service', config=None, instance=None):
@@ -52,6 +54,22 @@ class Service(object):
     def stop(self):
         """ Stops the nio Service. """
         self._instance._get('services/{}/stop'.format(self._name))
+
+    def command(self, *args):
+        '''send a command to the service or to the block.
+        To the service:
+            service.command('command')
+        To a block in the service:
+            service.command(block, 'command')
+        '''
+        get = self._instance._get
+        cmd_structure = '{}/{}/{}'.format
+        if isinstance(args[0], Block):
+            blk, cmd = args
+            return get(cmd_structure('blocks', blk, cmd))
+        else:
+            cmd, = args
+            return get(cmd_structure('services', self._name, cmd))
 
     def _status(self):
         """ Returns the status of the Service. """
