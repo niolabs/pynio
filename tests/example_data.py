@@ -26,7 +26,7 @@ dictionaries = {key: value for (key, value) in loc.items() if isinstance(value, 
 sort_configs = {key: OrderedDict(sorted(c.items())) for (key, c) in dictionaries.items()}
 
 for key, value in sort_configs.items():
-    print(key)
+    # print(key)
     assert isinstance(value, OrderedDict)
     exec("{} = value".format(key))
 del loc, dictionaries, sort_configs

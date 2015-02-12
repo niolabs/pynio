@@ -1,9 +1,11 @@
+from pprint import pprint
 from enum import Enum
 from copy import copy, deepcopy
 
 import unittest
 from pynio.properties import (AttrDict, SolidDict,
-                              TypedDict, TypedList, TypedEnum)
+                              TypedDict, TypedList, TypedEnum,
+                              load_block)
 
 mystr = 'abcdefg'
 mydict = dict(zip(mystr, range(len(mystr))))
@@ -92,4 +94,11 @@ class TestTypedEnum(unittest.TestCase):
 
 
 class TestLoadProperties(unittest.TestCase):
-    pass
+    def test_load_simulator_template(self):
+        from .example_data import SimulatorFastTemplate
+        blk = load_block(SimulatorFastTemplate)
+        print()
+        pprint(blk)
+        1/0
+
+

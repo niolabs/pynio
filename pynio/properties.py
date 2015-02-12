@@ -1,3 +1,4 @@
+from enum import Enum
 from copy import deepcopy
 
 
@@ -145,11 +146,13 @@ class TypedList(list):
 
 class TypedEnum:
     '''Class to make setting of enum types valid and error checked'''
-    def __init__(self, enum):
+    def __init__(self, enum, default=None):
         self._enum = enum
         self._enum_by_value = {e.value: e for e in enum}
         self._enum_by_name = {e.name: e for e in enum}
         self._value = next(iter(enum))
+        if default is not None:
+            self.value = default
 
     @property
     def value(self):
@@ -175,7 +178,71 @@ class TypedEnum:
         return repr(self.value)
 
 
-class NioProperty(TypedDict):
-    def __init__(self, template):
-        pass
+# Additional Properties
+class Properties(TypedDict):
+    TYPE = 'properties'
 
+class TimeDelta(TypedDict):
+    TYPE = 'timedelta'
+
+class NioObject(TypedDict):
+    TYPE = 'object'
+
+
+TypedList.TYPE = 'list'
+TypedEnum.TYPE = 'select'
+
+
+def load_block(template):
+    template.pop('type', None)
+    return load_properties(template['properties'])
+
+
+def load_properties(properties, obj=Properties):
+    out = {}
+    for key, value in properties.items():
+        out[key] = load_template(value)
+    return Properties(out)
+
+
+# Functions to go into PROPERTIES
+def load_template(template):
+    try:
+        hastype = 'type' in template
+    except TypeError:
+        hastype = False
+    if hastype:
+        ttype = template.pop('type')
+        ptype = PROPERTIES[ttype]
+        if 'template' in template or 'options' in template:
+            return ptype(template)
+        if 'default' in template:
+            return ptype(template['default'])
+        else:
+            return ptype()
+    else:
+        return template
+
+
+def load_list(template):
+    default = template['default']
+    template = load_template(template['template'])
+    ttype = type(template)
+    return TypedList(ttype, default)
+
+
+# Define all the properties and how to load them when you get their dict
+_mirror = lambda p: p
+
+
+PROPERTIES = {
+    'bool': _mirror,
+    TimeDelta.TYPE: lambda p: TimeDelta(p),
+    TypedEnum.TYPE: lambda p: TypedEnum(Enum('NioEnum', p['options'].items()),
+                                        p['default']),
+    TypedList.TYPE: load_list,
+    NioObject.TYPE: lambda p: load_properties(p['template'], NioObject),
+    'str': str,
+    'int': int,
+    'float': float
+}
