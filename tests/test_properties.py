@@ -10,6 +10,12 @@ mydict = dict(zip(mystr, range(len(mystr))))
 mydict['own'] = copy(mydict)
 
 
+class abc(Enum):
+    a = 0
+    b = 1
+    c = 2
+
+
 class TestAttrDict(unittest.TestCase):
     def test_basic(self):
         attrdict = AttrDict(mydict)
@@ -73,3 +79,17 @@ class TestTypedList(unittest.TestCase):
         assert l[0] == 100
         l[1] = 3.23423
         assert l[1] == 3
+
+
+class TestTypedEnum(unittest.TestCase):
+    def test_basic(self):
+        venum = TypedEnum(abc)
+        venum.value = 'a'
+        venum.value = 1
+        venum.value = abc.a
+        with self.assertRaises(ValueError):
+            venum.value = 6
+
+
+class TestLoadProperties(unittest.TestCase):
+    pass

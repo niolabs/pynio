@@ -157,7 +157,9 @@ class TypedEnum:
 
     @value.setter
     def value(self, value):
-        if value in self._enum_by_name:
+        if value in self._enum:
+            value = getattr(self._enum, value.name)
+        elif value in self._enum_by_name:
             value = self._enum_by_name[value]
         elif value in self._enum_by_value:
             value = self._enum_by_value[value]
@@ -171,3 +173,9 @@ class TypedEnum:
 
     def __repr__(self):
         return repr(self.value)
+
+
+class NioProperty(TypedDict):
+    def __init__(self, template):
+        pass
+
