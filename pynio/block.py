@@ -17,7 +17,7 @@ class Block(object):
         if instance:
             self._instance = instance
 
-        if self._instance is None:
+        if not self._instance:
             raise Exception('Block is not associated with an instance')
 
         config = self.config
