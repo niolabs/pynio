@@ -45,6 +45,26 @@ class Service(object):
             connection = {'name': blk1.name, 'receivers': [blk2.name]}
             execution.append(connection)
 
+    def _remove(self, block):
+        '''remove a block from service. Does NOT delete the block'''
+        execution = self.config.get('execution', None)
+        if execution is None:  # no blocks
+            return
+        block = block._name
+
+        def clean(connection):
+            '''removes block from connection if it is in the list.
+            returns False if whole connection should be removed'''
+            if connection['name'] == block:
+                return False
+            try:
+                connection['receivers'].remove(block)
+            except ValueError:
+                pass
+            return True
+
+        execution[:] = [c for c in execution if clean(c)]
+
     def start(self):
         """ Starts the nio Service. """
         self._instance._get('services/{}/start'.format(self._name))
@@ -74,6 +94,13 @@ class Service(object):
     @property
     def status(self):
         return self._status().get('status')
+
+    def delete(self):
+        '''Delete self from instance'''
+        self._instance._delete(
+            'services/{}'.format(self._name))
+        self._instance.services.remove(self._name)
+        self._instance = None  # make sure it isn't used anymore
 
     @property
     def pid(self):
