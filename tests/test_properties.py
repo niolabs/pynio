@@ -3,6 +3,9 @@ from enum import Enum
 from copy import copy, deepcopy
 
 import unittest
+
+from .example_data import (SimulatorFastTemplate, SimulatorFastConfig)
+
 from pynio.properties import (AttrDict, SolidDict,
                               TypedDict, TypedList, TypedEnum,
                               load_block)
@@ -95,10 +98,18 @@ class TestTypedEnum(unittest.TestCase):
 
 class TestLoadProperties(unittest.TestCase):
     def test_load_simulator_template(self):
-        from .example_data import SimulatorFastTemplate
         blk = load_block(SimulatorFastTemplate)
         print()
         pprint(blk)
-        1/0
 
+    def test_set_simulator(self):
+        blk = load_block(SimulatorFastTemplate)
+        blk.attribute.name = 'newsim'
+        blk.attribute.value.end = 5.8
+        blk.interval.days = 100
+        pprint(blk)
 
+    def test_typecheck_simulator(self):
+        blk = load_block(SimulatorFastTemplate)
+        self.assertRaises(TypeError, setattr, blk.attribute.value.end, 'bad')
+        self.assertRaises(TypeError, setattr, blk.interval.days, 'bad')

@@ -194,6 +194,7 @@ TypedEnum.TYPE = 'select'
 
 
 def load_block(template):
+    template = deepcopy(template)
     template.pop('type', None)
     return load_properties(template['properties'])
 
