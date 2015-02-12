@@ -17,13 +17,13 @@ class Service(object):
         if instance:
             self._instance = instance
 
-        if self._instance:
-            config = self.config
-            config['name'] = self._name
-            config['type'] = self._type
-            self._put('services/{}'.format(self._name), config)
-        else:
+        if not self._instance:
             raise Exception('Service is not associated with an instance')
+        config = self.config
+        config['name'] = self._name
+        config['type'] = self._type
+        self._put('services/{}'.format(self._name), config)
+        self._instances.services[self._name] = self
 
     def _put(self, endpoint, config):
         self._instance._put(endpoint, config)
