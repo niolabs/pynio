@@ -23,9 +23,7 @@ class Service(object):
         config['name'] = self._name
         config['type'] = self._type
         self._put('services/{}'.format(self._name), config)
-        if self._name not in self._instance.services:
-            self._instances.services[self._name] = self
-        assert self._instance.services[self._name] is self
+        self._instances.services[self._name] = self
 
     def _put(self, endpoint, config):
         self._instance._put(endpoint, config)

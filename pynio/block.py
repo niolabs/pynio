@@ -24,9 +24,7 @@ class Block(object):
         config['name'] = self._name
         config['type'] = self._type
         self._put('blocks/{}'.format(self._name), config)
-        if self._name not in self._instance.blocks:
-            self._instances.blocks[self._name] = self
-        assert self._instance.blocks[self._name] is self
+        self._instances.blocks[self._name] = self
 
     def _put(self, endpoint, config):
         self._instance._put(endpoint, config)
