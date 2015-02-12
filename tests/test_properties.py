@@ -19,6 +19,16 @@ class TestAttrDict(unittest.TestCase):
         assert isinstance(attrdict['own'], AttrDict)
 
 
+class TestSolid(unittest.TestCase):
+    def test_basic(self):
+        solid = SolidDict(mydict)
+        assert isinstance(solid['own'], SolidDict)
+        solid.f = 8
+        assert solid.f is 8
+        assert solid['f'] == solid.f
+        self.assertRaises(AttributeError, setattr, solid, 'dne', 'whatever')
+
+
 class TestTypedDict(unittest.TestCase):
     def test_set(self):
         convert = TypedDict(mydict)
@@ -40,11 +50,26 @@ class TestTypedDict(unittest.TestCase):
         self.assertRaises(TypeError, setattr, frozen, 'own', {})
 
 
-class TestSolid(unittest.TestCase):
-    def test_basic(self):
-        solid = SolidDict(mydict)
-        assert isinstance(solid['own'], SolidDict)
-        solid.f = 8
-        assert solid.f is 8
-        assert solid['f'] == solid.f
-        self.assertRaises(AttributeError, setattr, solid, 'dne', 'whatever')
+class TestTypedList(unittest.TestCase):
+    def test_append(self):
+        mylist = list(range(10))
+        l = TypedList(int, mylist)
+        assert l == mylist
+        l.append(10)
+        l.append(13.4)
+        l.append('67')
+        assert l[-3:] == [10, 13, 67]
+
+    def test_type_error(self):
+        mylist = list(range(10))
+        l = TypedList(int, mylist)
+        self.assertRaises(ValueError, l.append, 'hello')
+        self.assertRaises(ValueError, l.__setitem__, 5, 'hello')
+
+    def test_setitem(self):
+        mylist = list(range(10))
+        l = TypedList(int, mylist)
+        l[0] = 100
+        assert l[0] == 100
+        l[1] = 3.23423
+        assert l[1] == 3
