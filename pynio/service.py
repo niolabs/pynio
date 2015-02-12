@@ -35,12 +35,12 @@ class Service(object):
         # check if source block is already in config
         connection = None
         for blk in execution:
-            if blk.get('name') == blk1.name:
+            if blk['name'] == blk1.name:
                 connection = blk
                 break
         # if block exists, add the receiever, otherwise init connection
         if connection:
-            connection.get('receivers').append(blk2.name)
+            connection['receivers'].append(blk2.name)
         else:
             connection = {'name': blk1.name, 'receivers': [blk2.name]}
             execution.append(connection)
@@ -93,7 +93,7 @@ class Service(object):
 
     @property
     def status(self):
-        return self._status().get('status')
+        return self._status()['status']
 
     def delete(self):
         '''Delete self from instance'''
@@ -104,4 +104,4 @@ class Service(object):
 
     @property
     def pid(self):
-        return self._status().get('pid')
+        return self._status()['pid']
