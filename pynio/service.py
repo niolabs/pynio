@@ -66,12 +66,10 @@ class Service(object):
         cmd_structure = '{}/{}/{}'.format
         if isinstance(args[0], Block):
             blk, cmd = args
-            return get(cmd_structure('blocks', blk._name, cmd),
-                       data=data)
+            return get(cmd_structure('blocks', blk._name, cmd), data=data)
         else:
             cmd, = args
-            return get(cmd_structure('services', self._name, cmd),
-                       data=data)
+            return get(cmd_structure('services', self._name, cmd), data=data)
 
     def _status(self):
         """ Returns the status of the Service. """
