@@ -66,7 +66,7 @@ class Service(object):
         cmd_structure = '{}/{}/{}'.format
         if isinstance(args[0], Block):
             blk, cmd = args
-            return get(cmd_structure('blocks', blk, cmd))
+            return get(cmd_structure('blocks', blk._name, cmd))
         else:
             cmd, = args
             return get(cmd_structure('services', self._name, cmd))
