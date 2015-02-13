@@ -78,7 +78,7 @@ class Service(object):
         """ Stops the nio Service. """
         self._instance._get('services/{}/stop'.format(self._name))
 
-    def command(self, *args, **kwargs):
+    def command(self, command, block=None, **request_kwargs):
         '''send a command to the service or to the block.
         To the service:
             service.command('command')
@@ -91,12 +91,12 @@ class Service(object):
         '''
         get = self._instance._get
         cmd_structure = '{}/{}/{}'.format
-        if isinstance(args[0], Block):
-            blk, cmd = args
-            return get(cmd_structure('blocks', blk._name, cmd), **kwargs)
+        if block is None:
+            return get(cmd_structure('services', self._name, command),
+                       **request_kwargs)
         else:
-            cmd, = args
-            return get(cmd_structure('services', self._name, cmd), **kwargs)
+            return get(cmd_structure('blocks', block._name, command),
+                       **request_kwargs)
 
     def _status(self):
         """ Returns the status of the Service. """
