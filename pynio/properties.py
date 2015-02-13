@@ -39,16 +39,8 @@ class AttrDict(dict):
 
     def __getattribute__(self, attr):
         # Standard attribute lookup first
-        attrs = object.__getattribute__(self, '__dict__')
-        if attr in attrs:
-            return attrs[attr]
-        cls = object.__getattribute__(self, '__class__')
-        if attr in cls.__dict__:
-            return cls.__dict__[attr].__get__(self, cls)
-
-        # treat items as attributes
         try:
-            obj = object.__getattribute__(self, attr)
+            return object.__getattribute__(self, attr)
         except AttributeError:
             try:
                 obj = dict.__getitem__(self, attr)
