@@ -6,16 +6,12 @@ class Service(object):
         self.config = config or {}
         self._instance = instance
 
-    def save(self, instance=None):
+    def save(self):
         """ PUTs the service config to nio.
 
         Will create a new service if one does not exist by this name.
         Otherwise it will update the existing service config.
         """
-
-        # Add service to an instance if one is specified
-        if instance:
-            self._instance = instance
 
         if not self._instance:
             raise Exception('Service is not associated with an instance')

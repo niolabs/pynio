@@ -22,11 +22,12 @@ class TestBlock(unittest.TestCase):
                                   'type': 'type',
                                   'key': 'val'})
 
-        def test_save_instance_param(self):
+        def test_save_with_no_instance(self):
             b = Block('name', 'type')
             b.config = {'key': 'val'}
-            b._instance = MagicMock() # Associate with instance but not for real
             b._put = MagicMock()
-            b.save('instance')
-            self.assertTrue(b._put.called)
-            self.assertEqual(b._instance, 'instance')
+            with self.assertRaises(Exception) as context:
+                b.save()
+            self.assertTrue('Block is not associated with an instance',
+                            context.exception)
+            self.assertFalse(b._put.called)

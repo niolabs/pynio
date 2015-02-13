@@ -6,16 +6,12 @@ class Block(object):
         self.config = config or {}
         self._instance = instance
 
-    def save(self, instance=None):
+    def save(self):
         """ PUTs the block config to nio.
 
         Will create a new block if one does not exist by this name.
         Otherwise it will update the existing block config.
         """
-
-        # Add block to an instance if one is specified
-        if instance:
-            self._instance = instance
 
         if not self._instance:
             raise Exception('Block is not associated with an instance')
