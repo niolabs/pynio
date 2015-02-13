@@ -25,6 +25,7 @@ class TestBlock(unittest.TestCase):
         def test_save_instance_param(self):
             b = Block('name', 'type')
             b.config = {'key': 'val'}
+            b._instance = MagicMock() # Associate with instance but not for real
             b._put = MagicMock()
             b.save('instance')
             self.assertTrue(b._put.called)
