@@ -29,6 +29,14 @@ class TestAttrDict(unittest.TestCase):
         assert deepcopy(attrdict) == attrdict
         assert isinstance(attrdict['own'], AttrDict)
 
+    def test_descriptor(self):
+        '''Tests the descriptor feature of the attr dict'''
+        enum = TypedEnum(abc)
+        attr = AttrDict(enum=enum, a=2)
+        attr.a = 3
+        assert attr['a'] == 3
+        attr.enum = 0
+        assert attr.enum == 'a'
 
 # class TestSolid(unittest.TestCase):
 #     def test_basic(self):
@@ -50,7 +58,7 @@ class TestTypedDict(unittest.TestCase):
         assert convert.b == convert['b']
 
     def test_error(self):
-        import ipdb; ipdb.set_trace()
+        # import ipdb; ipdb.set_trace()
         convert = TypedDict(mydict)
         self.assertRaises(ValueError, setattr, convert, 'c', 'hello')
 
@@ -60,6 +68,7 @@ class TestTypedDict(unittest.TestCase):
         assert frozen['a'] == 5
         self.assertRaises(TypeError, setattr, frozen, 'own', TypedDict({}))
         self.assertRaises(TypeError, setattr, frozen, 'own', {})
+
 
 
 class TestTypedList(unittest.TestCase):
@@ -112,6 +121,7 @@ class TestTypedEnum(unittest.TestCase):
         x = venum
         assert isinstance(x, TypedEnum)
 
+
         # But when it is a member of a class/object, it is hidden
         class C:
             e = venum
@@ -156,7 +166,6 @@ class TestTypedEnum(unittest.TestCase):
         c.e = 'b'
         assert c.e == 'b' and isinstance(c.e, str)
         self.assertRaises(ValueError, setattr, c, 'e', 'z')
-        1/0
 
 
 class TestLoadProperties(unittest.TestCase):

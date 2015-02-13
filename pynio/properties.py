@@ -15,7 +15,9 @@ class AttrDict(dict):
     it's dictionary or method to use descriptors.'''
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
-        self.update(self)
+        for key, value in self.items():
+            if isinstance(value, dict):
+                self[key] = value
 
     def update(self, value):
         '''updates self to convert all values to own class type
@@ -206,11 +208,11 @@ class TypedEnum:
     def __str__(self):
         return repr(self._value.name)
 
-    # def __get__(self, obj, type=None):
-    #     return self._value.name
+    def __get__(self, obj, type=None):
+        return self._value.name
 
-    # def __set__(self, obj, value):
-    #     self.value = value
+    def __set__(self, obj, value):
+        self.value = value
 
 
 # Additional Properties
