@@ -1,0 +1,3 @@
+[submodule "tests/instance"]
+	path = tests/instance
+	url = git@github.com:nio-blocks/project_template.git
