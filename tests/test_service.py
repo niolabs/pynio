@@ -8,8 +8,8 @@ class TestBlock():
         self.name = name
         self._name = name
 
-class TestService(unittest.TestCase):
 
+class TestService(unittest.TestCase):
     def test_service(self):
         s = Service('name', 'type')
         self.assertEqual(s.name, 'name')
