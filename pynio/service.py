@@ -72,11 +72,11 @@ class Service(object):
 
     def start(self):
         """ Starts the nio Service. """
-        self._instance._get('services/{}/start'.format(self._name))
+        self.command('start')
 
     def stop(self):
         """ Stops the nio Service. """
-        self._instance._get('services/{}/stop'.format(self._name))
+        self.command('stop')
 
     def command(self, command, block=None, **request_kwargs):
         '''send a command to the service or to the block.
