@@ -95,18 +95,17 @@ class TypedDict(AttrDict):
         return value
 
     def __setitem__(self, item, value):
-        if item not in self:
-            raise KeyError(item)
         curval = self[item]
         value = self._convert_value(value, curval)
         dict.__setitem__(self, item, value)
 
     def __setattr__(self, attr, value):
-        if not hasattr(self, attr):
-            raise AttributeError(attr)
         curval = getattr(self, attr)
         value = self._convert_value(value, curval)
         AttrDict.__setattr__(self, attr, value)
+
+    def __set__(self, obj, value):
+        raise TypeError("TypedDict is a protected member")
 
 
 class TypedList(list):
@@ -143,6 +142,9 @@ class TypedList(list):
         value = self._convert_value(value)
         list.__setitem__(self, item, value)
 
+    def __set__(self, obj, value):
+        raise TypeError("Typed List is a protected member")
+
 
 class TypedEnum:
     '''Class to make setting of enum types valid and error checked'''
@@ -174,8 +176,14 @@ class TypedEnum:
     def name(self):
         return self._value.name
 
-    def __repr__(self):
-        return repr(self.value)
+    def __str__(self):
+        return repr(self._value.name)
+
+    def __get__(self, obj, type=None):
+        return self._value.name
+
+    def __set__(self, obj, value):
+        self.value = value
 
 
 # Additional Properties
@@ -194,8 +202,8 @@ TypedEnum.TYPE = 'select'
 
 
 def load_block(template):
+    '''Parsing function to load a block from a template dictionary'''
     template = deepcopy(template)
-    template.pop('type', None)
     return load_properties(template['properties'])
 
 
@@ -203,7 +211,7 @@ def load_properties(properties, obj=Properties):
     out = {}
     for key, value in properties.items():
         out[key] = load_template(value)
-    return Properties(out)
+    return obj(out)
 
 
 # Functions to go into PROPERTIES
@@ -214,13 +222,13 @@ def load_template(template):
         hastype = False
     if hastype:
         ttype = template.pop('type')
-        ptype = PROPERTIES[ttype]
+        load_function = PROPERTIES[ttype]
         if 'template' in template or 'options' in template:
-            return ptype(template)
-        if 'default' in template:
-            return ptype(template['default'])
+            return load_function(template)
+        elif 'default' in template:
+            return load_function(template['default'])
         else:
-            return ptype()
+            return load_function()
     else:
         return template
 
@@ -233,16 +241,13 @@ def load_list(template):
 
 
 # Define all the properties and how to load them when you get their dict
-_mirror = lambda p: p
-
-
 PROPERTIES = {
-    'bool': _mirror,
     TimeDelta.TYPE: lambda p: TimeDelta(p),
     TypedEnum.TYPE: lambda p: TypedEnum(Enum('NioEnum', p['options'].items()),
                                         p['default']),
     TypedList.TYPE: load_list,
     NioObject.TYPE: lambda p: load_properties(p['template'], NioObject),
+    'bool': bool,
     'str': str,
     'int': int,
     'float': float
