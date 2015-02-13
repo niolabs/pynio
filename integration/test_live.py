@@ -2,7 +2,7 @@ import unittest
 from pynio import Instance, Block, Service
 
 host = '127.0.0.1'
-port = '8181'
+port = 7357
 creds = 'Admin', 'Admin'
 
 
@@ -12,17 +12,19 @@ class TestLive(unittest.TestCase):
         nio = Instance(host, port, creds)
         sim = Block('sim', 'SimulatorFast')
         log = Block('log', 'LoggerBlock')
-        sim.save(nio)
-        log.save(nio)
+        nio.add_block(sim)
+        nio.add_block(log)
 
         service = Service('testsdk')
         service.connect(sim, log)
-        service.save(nio)
+        nio.add_service(service)
+        try:
+            service.stop()
+        except:
+            pass
         service.start()
-        input('started')
         service.stop()
 
-        input('stopped')
         sim.delete()
         log.delete()
         service.delete()
