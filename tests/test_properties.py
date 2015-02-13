@@ -30,14 +30,14 @@ class TestAttrDict(unittest.TestCase):
         assert isinstance(attrdict['own'], AttrDict)
 
 
-class TestSolid(unittest.TestCase):
-    def test_basic(self):
-        solid = SolidDict(mydict)
-        assert isinstance(solid['own'], SolidDict)
-        solid.f = 8
-        assert solid.f is 8
-        assert solid['f'] == solid.f
-        self.assertRaises(AttributeError, setattr, solid, 'dne', 'whatever')
+# class TestSolid(unittest.TestCase):
+#     def test_basic(self):
+#         solid = SolidDict(mydict)
+#         assert isinstance(solid['own'], SolidDict)
+#         solid.f = 8
+#         assert solid.f is 8
+#         assert solid['f'] == solid.f
+#         self.assertRaises(AttributeError, setattr, solid, 'dne', 'whatever')
 
 
 class TestTypedDict(unittest.TestCase):
@@ -50,6 +50,7 @@ class TestTypedDict(unittest.TestCase):
         assert convert.b == convert['b']
 
     def test_error(self):
+        import ipdb; ipdb.set_trace()
         convert = TypedDict(mydict)
         self.assertRaises(ValueError, setattr, convert, 'c', 'hello')
 

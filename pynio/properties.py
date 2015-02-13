@@ -10,7 +10,9 @@ def isiter(obj):
 
 
 class AttrDict(dict):
-    '''Dictionary that allows item access via getattr'''
+    '''Dictionary that allows item access via getattr
+    It also does some fun stuff with descriptors to allow objects in
+    it's dictionary or method to use descriptors.'''
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
         self.update(self)
@@ -23,24 +25,57 @@ class AttrDict(dict):
         for key, value in value:
             self[key] = value
 
-    def __getattr__(self, attr):
-        if attr in self.__dict__:  # prevents recursion from parent classes
-            return object.__getattr__(self, attr)
+    def _get(self, obj):
+        if hasattr(obj, '__get__'):
+            return obj.__get__(self)
         else:
-            return self[attr]
+            return obj
 
-    def __setattr__(self, attr, value):
-        if attr in self.__dict__:
-            object.__setattr__(self, attr, value)
+    def _set(self, key, value):
+        if isinstance(value, dict):
+            value = self.__class__(value)
+            assert isinstance(value, AttrDict)
+        dict.__setitem__(self, key, value)
+
+    def __getattribute__(self, attr):
+        # Standard attribute lookup first
+        attrs = object.__getattribute__(self, '__dict__')
+        if attr in attrs:
+            return attrs[attr]
+        cls = object.__getattribute__(self, '__class__')
+        if attr in cls.__dict__:
+            return cls.__dict__[attr].__get__(self, cls)
+
+        # treat items as attributes
+        try:
+            obj = object.__getattribute__(self, attr)
+        except AttributeError:
+            try:
+                obj = dict.__getitem__(self, attr)
+            except KeyError:
+                raise AttributeError
+        return self._get(obj)
+
+    def __setattr__(self, attr, value, _keyonly=False):
+        try:
+            if _keyonly: raise AttributeError
+            obj = object.__getattribute__(self, attr)
+        except AttributeError:
+            if attr in self:
+                obj = self[attr]
+            else:  # New object, only minor checking
+                return self._set(attr, value)
+
+        if hasattr(obj, '__set__'):
+            # print('setting __set__', obj, attr, value)
+            obj.__set__(self, value)
         else:
-            self[attr] = value
+            self._set(attr, value)
 
     def __setitem__(self, key, value):
         '''overloaded to automatically convert dictionaries to
         self'''
-        if isinstance(value, dict):
-            value = self.__class__(value)
-        dict.__setitem__(self, key, value)
+        self.__setattr__(key, value, _keyonly=True)
 
     def __copy__(self, *args, **kwargs):
         return AttrDict(self)
@@ -179,11 +214,11 @@ class TypedEnum:
     def __str__(self):
         return repr(self._value.name)
 
-    def __get__(self, obj, type=None):
-        return self._value.name
+    # def __get__(self, obj, type=None):
+    #     return self._value.name
 
-    def __set__(self, obj, value):
-        self.value = value
+    # def __set__(self, obj, value):
+    #     self.value = value
 
 
 # Additional Properties
