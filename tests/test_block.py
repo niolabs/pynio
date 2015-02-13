@@ -28,6 +28,6 @@ class TestBlock(unittest.TestCase):
             b._put = MagicMock()
             with self.assertRaises(Exception) as context:
                 b.save()
-            self.assertTrue('Block is not associated with an instance',
-                            context.exception)
+            self.assertTrue('Block is not associated with an instance' in
+                            context.exception.args[0])
             self.assertFalse(b._put.called)
