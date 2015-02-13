@@ -24,6 +24,12 @@ class REST(object):
                          timeout=timeout)
         r.raise_for_status()
 
+    def _delete(self, endpoint, timeout=None):
+        r = requests.delete(self._url(endpoint), auth=self._auth,
+                            timeout=timeout)
+        r.raise_for_status()
+        return r
+
     @property
     def host(self):
         return self._host

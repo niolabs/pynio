@@ -17,13 +17,14 @@ class Block(object):
         if instance:
             self._instance = instance
 
-        if self._instance:
-            config = self.config
-            config['name'] = self._name
-            config['type'] = self._type
-            self._put('blocks/{}'.format(self._name), config)
-        else:
+        if not self._instance:
             raise Exception('Block is not associated with an instance')
+
+        config = self.config
+        config['name'] = self._name
+        config['type'] = self._type
+        self._put('blocks/{}'.format(self._name), config)
+        self._instances.blocks[self._name] = self
 
     def _put(self, endpoint, config):
         self._instance._put(endpoint, config)
@@ -40,3 +41,11 @@ class Block(object):
     @property
     def type(self):
         return self._type
+
+    def delete(self):
+        '''Delete self from instance and services'''
+        self._instance._delete('blocks/{}'.format(self._name))
+        for s in self._instance.services.values():
+            s._remove(self)
+        self._instance.blocks.remove(self._name)
+        self._instance = None  # make sure it isn't used anymore
