@@ -3,6 +3,9 @@ import json
 
 
 class REST(object):
+    '''Object for making it easier to communicate with a rest object.
+    Stores host, port and credential information and uses it automatically.
+    '''
     def __init__(self, host='127.0.0.1', port=8181, creds=None):
         self._host = host
         self._port = port
@@ -36,8 +39,7 @@ class REST(object):
 
     @host.setter
     def host(self, value):
-        print('Create a new Instance if you want a new host.')
-        pass
+        raise TypeError('Create a new Instance for a new host')
 
     @property
     def port(self):
