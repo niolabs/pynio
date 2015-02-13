@@ -21,10 +21,12 @@ class Instance(REST):
         return self._get('nio')
 
     def add_block(self, block):
-        block.save(self)
+        block._instance = self
+        block.save()
 
     def add_service(self, service):
-        service.save(self)
+        service._instance = self
+        service.save()
 
     def _get_blocks(self):
         blks = {}

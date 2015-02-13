@@ -25,7 +25,7 @@ class REST(object):
         r.raise_for_status()
 
     def _delete(self, endpoint, timeout=None):
-        r = requests.delete(self._url(endpoint), auth=self._auth,
+        r = requests.delete(self._url.format(endpoint), auth=self._creds,
                             timeout=timeout)
         r.raise_for_status()
         return r

@@ -6,16 +6,12 @@ class Block(object):
         self.config = config or {}
         self._instance = instance
 
-    def save(self, instance=None):
+    def save(self):
         """ PUTs the block config to nio.
 
         Will create a new block if one does not exist by this name.
         Otherwise it will update the existing block config.
         """
-
-        # Add block to an instance if one is specified
-        if instance:
-            self._instance = instance
 
         if not self._instance:
             raise Exception('Block is not associated with an instance')
@@ -24,7 +20,7 @@ class Block(object):
         config['name'] = self._name
         config['type'] = self._type
         self._put('blocks/{}'.format(self._name), config)
-        self._instances.blocks[self._name] = self
+        self._instance.blocks[self._name] = self
 
     def _put(self, endpoint, config):
         self._instance._put(endpoint, config)
@@ -47,5 +43,5 @@ class Block(object):
         self._instance._delete('blocks/{}'.format(self._name))
         for s in self._instance.services.values():
             s._remove(self)
-        self._instance.blocks.remove(self._name)
+        self._instance.blocks.pop(self._name)
         self._instance = None  # make sure it isn't used anymore

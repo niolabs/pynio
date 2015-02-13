@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import MagicMock
 from pynio.service import Service
 
 
@@ -17,7 +18,7 @@ class TestService(unittest.TestCase):
         s = Service('name', 'type')
         s.connect(TestBlock('one'), TestBlock('two'))
         self.assertDictEqual(
-            s.config['execution'][0],
+            s.config['execution'][1],
             {
                 'name': 'one',
                 'receivers': ['two']
@@ -29,11 +30,11 @@ class TestService(unittest.TestCase):
         s.connect(TestBlock('one'), TestBlock('two'))
         s.connect(TestBlock('one'), TestBlock('three'))
         self.assertDictEqual(
-            s.config['execution'][0],
+            s.config['execution'][1],
             {
                 'name': 'one',
                 'receivers': ['two', 'three']
-            }
+            },
         )
 
     def test_connect_two_to_one(self):
@@ -41,14 +42,14 @@ class TestService(unittest.TestCase):
         s.connect(TestBlock('one'), TestBlock('three'))
         s.connect(TestBlock('two'), TestBlock('three'))
         self.assertDictEqual(
-            s.config['execution'][0],
+            s.config['execution'][1],
             {
                 'name': 'one',
                 'receivers': ['three']
             }
         )
         self.assertDictEqual(
-            s.config['execution'][1],
+            s.config['execution'][2],
             {
                 'name': 'two',
                 'receivers': ['three']
@@ -60,14 +61,14 @@ class TestService(unittest.TestCase):
         s.connect(TestBlock('one'), TestBlock('two'))
         s.connect(TestBlock('two'), TestBlock('three'))
         self.assertDictEqual(
-            s.config['execution'][0],
+            s.config['execution'][1],
             {
                 'name': 'one',
                 'receivers': ['two']
             }
         )
         self.assertDictEqual(
-            s.config['execution'][1],
+            s.config['execution'][0],
             {
                 'name': 'two',
                 'receivers': ['three']

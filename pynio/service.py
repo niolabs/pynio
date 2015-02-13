@@ -6,16 +6,12 @@ class Service(object):
         self.config = config or {}
         self._instance = instance
 
-    def save(self, instance=None):
+    def save(self):
         """ PUTs the service config to nio.
 
         Will create a new service if one does not exist by this name.
         Otherwise it will update the existing service config.
         """
-
-        # Add service to an instance if one is specified
-        if instance:
-            self._instance = instance
 
         if not self._instance:
             raise Exception('Service is not associated with an instance')
@@ -23,7 +19,7 @@ class Service(object):
         config['name'] = self._name
         config['type'] = self._type
         self._put('services/{}'.format(self._name), config)
-        self._instances.services[self._name] = self
+        self._instance.services[self._name] = self
 
     def _put(self, endpoint, config):
         self._instance._put(endpoint, config)
@@ -38,6 +34,13 @@ class Service(object):
             if blk['name'] == blk1.name:
                 connection = blk
                 break
+        for blk in execution:
+            if blk['name'] == blk2.name:
+                break
+        else:
+            # block2 doesn't exist, so add it
+            execution.append({'name': blk2.name, 'receivers': []})
+
         # if block exists, add the receiever, otherwise init connection
         if connection:
             connection['receivers'].append(blk2.name)
@@ -99,7 +102,7 @@ class Service(object):
         '''Delete self from instance'''
         self._instance._delete(
             'services/{}'.format(self._name))
-        self._instance.services.remove(self._name)
+        self._instance.services.pop(self._name)
         self._instance = None  # make sure it isn't used anymore
 
     @property
