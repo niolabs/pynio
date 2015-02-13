@@ -5,7 +5,6 @@ from pynio.service import Service
 
 class Instance(REST):
     """ Interface for a running nio instance.
-
     """
 
     def __init__(self, host='127.0.0.1', port=8181, creds=None):
