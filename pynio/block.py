@@ -1,4 +1,8 @@
 class Block(object):
+    '''SDK Access to nio Block objects.
+    Blocks are units inside of services. They perform functions on incomming
+    signals and put the signals out.
+    '''
 
     def __init__(self, name, type, config=None, instance=None):
         self._name = name
@@ -28,11 +32,6 @@ class Block(object):
     @property
     def name(self):
         return self._name
-
-    @name.setter
-    def name(self, value):
-        print('You cannot change this attribute.')
-        pass
 
     @property
     def type(self):
