@@ -55,3 +55,7 @@ target/
 
 *.swp
 .ropeproject
+
+# project specific
+notebooks
+nioproject

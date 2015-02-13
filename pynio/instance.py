@@ -5,7 +5,6 @@ from pynio.service import Service
 
 class Instance(REST):
     """ Interface for a running nio instance.
-
     """
 
     def __init__(self, host='127.0.0.1', port=8181, creds=None):
@@ -21,10 +20,12 @@ class Instance(REST):
         return self._get('nio')
 
     def add_block(self, block):
-        block.save(self)
+        block._instance = self
+        block.save()
 
     def add_service(self, service):
-        service.save(self)
+        service._instance = self
+        service.save()
 
     def _get_blocks(self):
         blks = {}
