@@ -1,3 +1,5 @@
+from .block import Block
+
 class Service(object):
 
     def __init__(self, name, type='Service', config=None, instance=None):
@@ -70,11 +72,31 @@ class Service(object):
 
     def start(self):
         """ Starts the nio Service. """
-        self._instance._get('services/{}/start'.format(self._name))
+        self.command('start')
 
     def stop(self):
         """ Stops the nio Service. """
-        self._instance._get('services/{}/stop'.format(self._name))
+        self.command('stop')
+
+    def command(self, command, block=None, **request_kwargs):
+        '''send a command to the service or to the block.
+        To the service:
+            service.command('command')
+        To a block in the service:
+            service.command(block, 'command')
+
+        kwargs are passed onto the request. Some of use are:
+            data: add data onto the request
+            timeout: set the request timeout
+        '''
+        get = self._instance._get
+        if block is None:
+            return get('services/{}/{}'.format(self._name, command),
+                       **request_kwargs)
+        else:
+            return get('services/{}/{}/{}'.format(self._name, block._name,
+                                                  command),
+                       **request_kwargs)
 
     def _status(self):
         """ Returns the status of the Service. """

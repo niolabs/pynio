@@ -12,10 +12,13 @@ class REST(object):
         self._creds = creds or ('User', 'User')
         self._url = 'http://{}:{}/{}'.format(host, port, '{}')
 
-    def _get(self, endpoint, timeout=None):
+    def _get(self, endpoint, timeout=None, data=None):
+        if data is not None:
+            data = json.dumps(data)
         r = requests.get(self._url.format(endpoint),
                          auth=self._creds,
-                         timeout=timeout)
+                         timeout=timeout,
+                         data=data)
         r.raise_for_status()
         return r.json()
 
