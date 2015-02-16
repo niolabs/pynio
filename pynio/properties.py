@@ -12,51 +12,69 @@ def isiter(obj):
 class AttrDict(dict):
     '''Dictionary that allows item access via getattr
     It also does some fun stuff with descriptors to allow objects in
-    it's dictionary or method to use descriptors.'''
+    it's dictionary or method to use descriptors (you can define the
+    __get__ and __set__ methods of items and they will be used)
+
+    Developer Notes:
+    -   This object is designed so that ALL user attributes go into the
+        dictionary. Think if it as:
+            attrdict.key = value := attrdict['key'] = value
+    -   This upholds descriptors for lesser objects, to make for default
+            item assignment and typing
+    '''
+
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
+        # Make all internal dictionaries AttrDicts
         for key, value in self.items():
             if isinstance(value, dict):
                 self[key] = value
 
     def update(self, value):
-        '''updates self to convert all values to own class type
-        '''
         if isinstance(value, dict):
             value = value.items()
         for key, value in value:
             self[key] = value
 
     def _get(self, obj):
+        '''Uses descriptors where possible'''
         if hasattr(obj, '__get__'):
             return obj.__get__(self)
         else:
             return obj
 
     def _set(self, key, value):
+        '''Automatically convert dictionaries set into AttrDict'''
         if isinstance(value, dict):
             value = self.__class__(value)
             assert isinstance(value, AttrDict)
         dict.__setitem__(self, key, value)
 
-    def __getattribute__(self, attr):
-        # Standard attribute lookup first
+    def __getattribute__(self, attr, keyonly=False):
+        '''Where all the magic happens. Allows for item assignment through
+        attribute notation'''
         try:
+            if keyonly: raise AttributeError
+            # First try the standard attr lookup and return that
             return object.__getattribute__(self, attr)
         except AttributeError:
+            # all attributes that the user sets are stored in the dictionary
+            # internal keys
             try:
                 obj = dict.__getitem__(self, attr)
             except KeyError:
                 raise AttributeError
         return self._get(obj)
 
-    def __setattr__(self, attr, value, _keyonly=False):
+    def __setattr__(self, attr, value, keyonly=False):
+        '''keyonly should only be used from __setitem__
+        It only looks inside the core dictionary keys'''
         try:
-            if _keyonly: raise AttributeError
+            if keyonly: raise AttributeError
             obj = object.__getattribute__(self, attr)
         except AttributeError:
             if attr in self:
-                obj = self[attr]
+                obj = dict.__getitem__(self, attr)
             else:  # New object, only minor checking
                 return self._set(attr, value)
 
@@ -67,9 +85,13 @@ class AttrDict(dict):
             self._set(attr, value)
 
     def __setitem__(self, key, value):
-        '''overloaded to automatically convert dictionaries to
-        self'''
-        self.__setattr__(key, value, _keyonly=True)
+        self.__setattr__(key, value, keyonly=True)
+
+    def __getitem__(self, key):
+        try:
+            self.__getattr__(key, keyonly=True)
+        except AttributeError as exc:
+            raise KeyError from exc
 
     def __copy__(self, *args, **kwargs):
         return AttrDict(self)
