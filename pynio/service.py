@@ -90,12 +90,12 @@ class Service(object):
             timeout: set the request timeout
         '''
         get = self._instance._get
-        cmd_structure = '{}/{}/{}'.format
         if block is None:
-            return get(cmd_structure('services', self._name, command),
+            return get('services/{}/{}'.format(self._name, command),
                        **request_kwargs)
         else:
-            return get(cmd_structure('blocks', block._name, command),
+            return get('services/{}/{}/{}'.format(self._name, block._name,
+                                                  command),
                        **request_kwargs)
 
     def _status(self):

@@ -77,7 +77,6 @@ class TestService(unittest.TestCase):
         )
 
     def test_command(self):
-        cmd_structure = '{}/{}/{}'.format
         s = Service('name', 'type')
         blk = TestBlock('one')
         s.connect(blk, TestBlock('two'))
@@ -86,15 +85,12 @@ class TestService(unittest.TestCase):
         s._instance._get = mm
 
         s.command('foo')
-        assert mm.called
-        assert mm.call_args[0][0] == cmd_structure('services', 'name', 'foo')
+        self.assertTrue(mm.called)
+        self.assertEqual(mm.call_args[0][0],
+                         'services/{}/{}'.format('name', 'foo'))
 
         mm.called = 0
         s.command('bar', blk)
-        assert mm.called
-        assert mm.call_args[0][0] == cmd_structure('blocks', 'one', 'bar')
-
-
-
-
-
+        self.assertTrue(mm.called)
+        self.assertEqual(mm.call_args[0][0],
+                         'services/{}/{}/{}'.format('name', 'one', 'bar'))
