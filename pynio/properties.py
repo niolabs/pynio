@@ -36,7 +36,10 @@ class AttrDict(dict):
         if isinstance(value, dict):
             value = value.items()
         for key, value in value:
-            self[key] = value
+            if isinstance(value, dict):
+                self[key].update(value)
+            else:
+                self[key] = value
 
     def _get_attr(self, attr):
         '''Convience function to bypass the special __getattribute__
@@ -115,10 +118,10 @@ class AttrDict(dict):
             raise KeyError from exc
 
     def __copy__(self, *args, **kwargs):
-        return AttrDict(self)
+        return self.__class__(self)
 
     def __deepcopy__(self, *args, **kwargs):
-        return AttrDict({key: deepcopy(value) for (key, value) in self.items()})
+        return self.__class__({key: deepcopy(value) for (key, value) in self.items()})
 
 
 class SolidDict(AttrDict):
@@ -145,6 +148,12 @@ class TypedDict(AttrDict):
     def __init__(self, *args, convert=True, **kwargs):
         object.__setattr__(self, '_convert', convert)
         super().__init__(*args, **kwargs)
+
+    def update(self, value, drop_unknown=False):
+        if drop_unknown:
+            value = {key: value for (key, value) in value.items()
+                     if key in self}
+        return AttrDict.update(self, value)
 
     def _convert_value(self, value, curval):
         '''Convert value to type(curvalue). Also do associated error checking'''
@@ -180,6 +189,18 @@ class TypedDict(AttrDict):
     def __set__(self, obj, value):
         raise TypeError("TypedDict is a protected member")
 
+    def to_basic(self):
+        '''returns self in only basic python types.'''
+        out = {}
+        for key in self:
+            value = dict.__getitem__(self, key)
+            if hasattr(value, 'to_basic'):
+                value = value.to_basic()
+            elif hasattr(value, '__get__'):
+                value = value.__get__(self, self.__class__)
+            out[key] = value
+        return out
+
 
 class TypedList(list):
     '''A list that preserves types
@@ -194,6 +215,17 @@ class TypedList(list):
         list.__init__(self)  # make self an empty list
         convert = self._convert
         self.extend(tuple(*args, **kwargs))
+
+    def to_basic(self):
+        '''returns self in only basic python types.'''
+        out = []
+        for value in list.__iter__(self):
+            if hasattr(value, 'to_basic'):
+                value = value.to_basic()
+            elif hasattr(value, '__get__'):
+                value = value.__get__(self, self.__class__)
+            out.append(value)
+        return out
 
     def _convert_value(self, value):
         if not isinstance(value, type):
@@ -249,7 +281,7 @@ class TypedEnum:
     def name(self):
         return self._value.name
 
-    def __str__(self):
+    def __repr__(self):
         return repr(self._value.name)
 
     def __get__(self, obj, type=None):

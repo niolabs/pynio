@@ -1,3 +1,6 @@
+from copy import deepcopy
+import json
+
 from .properties import load_block
 
 
@@ -11,7 +14,7 @@ class Block(object):
         self._name = name
         self._type = type
         self._template = None
-        self.config = config or {}
+        self._config = config or {}
         self._instance = instance
 
     def save(self):
@@ -45,10 +48,31 @@ class Block(object):
     def template(self):
         return self._template
 
-    @template.setter
-    def template(self, value):
+    @property
+    def config(self):
+        return self._config
+
+    def json(self):
+        return json.dumps(self._config.to_basic())
+
+    @config.setter
+    def config(self, value):
+        if self._template is None:
+            self._config = value
+            return
+        config = deepcopy(self._template)
+        config.readonly = False
+        config.update(value, drop_unknown=True)
+        self._config = config
+
+    def load_template(self, type, value):
         '''Set the template with a template gotten from nio'''
-        self._template = load_block(value)
+        template = load_block(value)
+        template.type = type
+        template.name = ''
+        template.readonly = True
+        self._template = template
+        self.config = self._config  # reload own config with new template
 
     def delete(self):
         '''Delete self from instance and services'''
