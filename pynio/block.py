@@ -33,9 +33,10 @@ class Block(object):
         config['type'] = self._type
         # load template and then reload config
         self.template = self._instance.blocks_types[self._type].template
+        # import ipdb; ipdb.set_trace()
         self.config = config
         # put onto the web
-        self._put('blocks/{}'.format(self._name), config)
+        self._put('blocks/{}'.format(self._name), self.json())
         self._instance.blocks[self._name] = self
 
     def _put(self, endpoint, config):
@@ -74,7 +75,7 @@ class Block(object):
         self._config = config
 
     def json(self):
-        return json.dumps(self._config.__basic__())
+        return self._config.__basic__()
 
     def _load_template(self, type, value, instance=None):
         '''Set the template with a template gotten from nio'''
