@@ -69,6 +69,14 @@ class TestTypedDict(unittest.TestCase):
         self.assertRaises(TypeError, setattr, frozen, 'own', TypedDict({}))
         self.assertRaises(TypeError, setattr, frozen, 'own', {})
 
+    def test_descriptor(self):
+        venum = TypedEnum(abc)
+        data = dict(mydict)
+        data['enum'] = venum
+        data = TypedDict(data)
+        data.enum = 1
+        self.assertEqual(data.enum, 'b')
+        self.assertRaises(ValueError, data.__setattr__, 'enum', 'z')
 
 
 class TestTypedList(unittest.TestCase):

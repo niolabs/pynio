@@ -12,7 +12,7 @@ def isiter(obj):
 class AttrDict(dict):
     '''Dictionary that allows item access via getattr
     It also does some fun stuff with descriptors to allow objects in
-    it's dictionary or method to use descriptors (you can define the
+    it's dictionary to use descriptors (you can define the
     __get__ and __set__ methods of items and they will be used)
 
     Developer Notes:
@@ -25,16 +25,30 @@ class AttrDict(dict):
 
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
-        # Make all internal dictionaries AttrDicts
+        # Make all internal dictionaries AttrDicts. Make sure this
+        # Overrides any super class's settings
         for key, value in self.items():
             if isinstance(value, dict):
-                self[key] = value
+                dict.__setitem__(self, key, self.__class__(value))
 
     def update(self, value):
         if isinstance(value, dict):
             value = value.items()
         for key, value in value:
             self[key] = value
+
+    def _get_attr(self, attr):
+        '''Convience function to bypass the special __getattribute__
+        funcitonality (specifically descriptors in items)'''
+        try:
+            return object.__getattribute__(self, attr)
+        except AttributeError:
+            return self._get_item(attr)
+
+    def _get_item(self, item):
+        '''Convinience function to pypass special machinery
+        (like descriptors in items)'''
+        return dict.__getitem__(self, item)
 
     def _get(self, obj):
         '''Uses descriptors where possible'''
@@ -89,7 +103,7 @@ class AttrDict(dict):
 
     def __getitem__(self, key):
         try:
-            self.__getattr__(key, keyonly=True)
+            return self.__getattribute__(key, keyonly=True)
         except AttributeError as exc:
             raise KeyError from exc
 
@@ -109,34 +123,24 @@ class SolidDict(AttrDict):
             raise KeyError(item)
         AttrDict.__setitem__(self, item, value)
 
-    def __setattr__(self, attr, value):
-        if attr not in self and attr not in self.__dict__:
+    def __setattr__(self, attr, value, *args, **kwargs):
+        if not hasattr(self, attr):
             raise AttributeError(attr)
-        AttrDict.__setattr__(self, attr, value)
+        AttrDict.__setattr__(self, attr, value, *args, **kwargs)
 
 
 class TypedDict(AttrDict):
     '''Dictionary like object that keeps track of types. Choose whether
         to attempt to convert types (default) or not allow different types.
-        Also specify types that cannot be changed
     Arguments:
         convert: whether to attempt to convert values that don't match
-        frozentypes: list/tupple of types to not allow change
-    Special Cases:
-        If an item is an Enum Class, then it will only allow values that are in
-            the Enum Class.
-        '''
-    def __init__(self, *args, convert=True, frozentypes=tuple(), **kwargs):
-        object.__setattr__(self, '_frozentypes', tuple())
+    '''
+    def __init__(self, *args, convert=True, **kwargs):
         object.__setattr__(self, '_convert', convert)
         super().__init__(*args, **kwargs)
-        object.__setattr__(self, '_frozentypes', frozentypes)  # freeze types after init
-        assert hasattr(self, '_frozentypes')
 
     def _convert_value(self, value, curval):
         '''Convert value to type(curvalue). Also do associated error checking'''
-        if isinstance(curval, self._frozentypes):
-            raise TypeError("{} is a frozen type".format(type(curval)))
         curtype = type(curval)
         if not isinstance(value, curtype):
             if self._convert:
@@ -146,14 +150,25 @@ class TypedDict(AttrDict):
         return value
 
     def __setitem__(self, item, value):
+        actual = self._get_item(item)
+        if hasattr(actual, '__set__'):
+            actual.__set__(None, value)
+            return
         curval = self[item]
         value = self._convert_value(value, curval)
-        dict.__setitem__(self, item, value)
+        AttrDict.__setitem__(self, item, value)
 
-    def __setattr__(self, attr, value):
+    def __setattr__(self, attr, value, keyonly=False):
+        if keyonly:
+            actual = self._get_item(attr)
+        else:
+            actual = self._get_attr(attr)
+        if hasattr(actual, '__set__'):
+            actual.__set__(None, value)
+            return
         curval = getattr(self, attr)
         value = self._convert_value(value, curval)
-        AttrDict.__setattr__(self, attr, value)
+        AttrDict.__setattr__(self, attr, value, keyonly)
 
     def __set__(self, obj, value):
         raise TypeError("TypedDict is a protected member")
@@ -241,8 +256,10 @@ class TypedEnum:
 class Properties(TypedDict):
     TYPE = 'properties'
 
+
 class TimeDelta(TypedDict):
     TYPE = 'timedelta'
+
 
 class NioObject(TypedDict):
     TYPE = 'object'
