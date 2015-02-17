@@ -62,10 +62,10 @@ class TestTypedDict(unittest.TestCase):
         convert = TypedDict(mydict)
         self.assertRaises(ValueError, setattr, convert, 'c', 'hello')
 
-    def test_frozen(self):
-        frozen = TypedDict(mydict, frozentypes=dict)
-        frozen.a = 5
-        assert frozen['a'] == 5
+    def test_readonly(self):
+        frozen = TypedDict(mydict)
+        frozen.readonly = True
+        self.assertRaises(TypeError, setattr, frozen, 'a', 5)
         self.assertRaises(TypeError, setattr, frozen, 'own', TypedDict({}))
         self.assertRaises(TypeError, setattr, frozen, 'own', {})
 

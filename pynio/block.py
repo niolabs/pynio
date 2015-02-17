@@ -1,3 +1,6 @@
+from .properties import load_block
+
+
 class Block(object):
     '''SDK Access to nio Block objects.
     Blocks are units inside of services. They perform functions on incomming
@@ -7,6 +10,7 @@ class Block(object):
     def __init__(self, name, type, config=None, instance=None):
         self._name = name
         self._type = type
+        self._template = None
         self.config = config or {}
         self._instance = instance
 
@@ -36,6 +40,15 @@ class Block(object):
     @property
     def type(self):
         return self._type
+
+    @property
+    def template(self):
+        return self._template
+
+    @template.setter
+    def template(self, value):
+        '''Set the template with a template gotten from nio'''
+        self._template = load_block(value)
 
     def delete(self):
         '''Delete self from instance and services'''
