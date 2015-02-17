@@ -22,6 +22,7 @@ class AttrDict(dict):
     -   This upholds descriptors for lesser objects, to make for default
             item assignment and typing
     '''
+    readonly = False  # doesn't allow item setting at all
 
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
@@ -62,6 +63,8 @@ class AttrDict(dict):
         if isinstance(value, dict):
             value = self.__class__(value)
             assert isinstance(value, AttrDict)
+        if self.readonly:
+            raise TypeError('{} is read only'.format(self))
         dict.__setitem__(self, key, value)
 
     def __getattribute__(self, attr, keyonly=False):
@@ -84,8 +87,12 @@ class AttrDict(dict):
         '''keyonly should only be used from __setitem__
         It only looks inside the core dictionary keys'''
         try:
-            if keyonly: raise AttributeError
+            if keyonly:
+                raise AttributeError
+            # make sure the attribute exists before we set it
             obj = object.__getattribute__(self, attr)
+            object.__setattr__(self, attr, value)
+            return
         except AttributeError:
             if attr in self:
                 obj = dict.__getitem__(self, attr)
