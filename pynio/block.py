@@ -1,5 +1,4 @@
 from copy import deepcopy, copy
-import json
 
 from .properties import load_block
 
