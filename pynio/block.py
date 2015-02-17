@@ -76,7 +76,7 @@ class Block(object):
     def json(self):
         return json.dumps(self._config.__basic__())
 
-    def load_template(self, type, value, instance=None):
+    def _load_template(self, type, value, instance=None):
         '''Set the template with a template gotten from nio'''
         if instance is not None:
             self._instance = instance

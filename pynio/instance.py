@@ -31,7 +31,7 @@ class Instance(REST):
         blocks_types = {}
         for btype, template in self._get('blocks_types').items():
             b = Block(btype, btype, instance=self)
-            b.load_template(btype, template)
+            b._load_template(btype, template)
             blocks_types[btype] = b
 
         blocks = {}
