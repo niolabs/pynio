@@ -124,7 +124,6 @@ class TestTypedEnum(unittest.TestCase):
         self.assertEqual(venum.__get__(None, None), 'b')
 
 
-
 class TestLoadProperties(unittest.TestCase):
     def test_load_simulator_template(self):
         blk = load_block(SimulatorFastTemplate)
@@ -142,3 +141,5 @@ class TestLoadProperties(unittest.TestCase):
         blk = load_block(SimulatorFastTemplate)
         self.assertRaises(TypeError, setattr, blk.attribute.value.end, 'bad')
         self.assertRaises(TypeError, setattr, blk.interval.days, 'bad')
+        blk.log_level = 'DEBUG'
+        self.assertRaises(ValueError, setattr, blk, 'log_level', 'bad')
