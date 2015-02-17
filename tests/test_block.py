@@ -13,7 +13,6 @@ class TestBlock(unittest.TestCase):
             self.assertEqual(b.type, 'type')
 
         def test_save(self):
-            import ipdb; ipdb.set_trace()
             b = Block('name', 'type')
             # b._config = {'key': 'val'}
             b._config = MagicMock()
