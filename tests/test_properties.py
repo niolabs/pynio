@@ -113,67 +113,16 @@ class TestTypedEnum(unittest.TestCase):
         with self.assertRaises(ValueError):
             venum.value = 6
 
+    def test_setting(self):
+        venum = TypedEnum(abc)
+        venum.value = 1
+        self.assertEqual(venum.name, 'b')
+
     def test_descriptor(self):
-        '''test mostly the features of __get__ and __set__
-        Basically when they are just objects they are fair game,
-        but when they become a member of a class they are super
-        protected (I can't even figure out a way to get access to
-        the base object)'''
         venum = TypedEnum(abc)
-        assert isinstance(venum, TypedEnum)
-        # set works normally when not a member of an object
-        venum = 0
-        assert isinstance(venum, int)
+        venum.__set__(None, 1)
+        self.assertEqual(venum.__get__(None, None), 'b')
 
-        venum = TypedEnum(abc)
-        x = venum
-        assert isinstance(x, TypedEnum)
-
-
-        # But when it is a member of a class/object, it is hidden
-        class C:
-            e = venum
-
-        c = C()
-        assert c.e == 'a' and isinstance(c.e, str)
-        c.e = 'b'
-        assert c.e == 'b' and isinstance(c.e, str)
-        self.assertRaises(ValueError, setattr, c, 'e', 'z')
-
-        # However, when it is added on in init it doesn't behave the same
-        # way
-        class C:
-            def __init__(self):
-                self.e = venum
-
-        c = C()
-        assert c.e != 'a' and isinstance(c.e, TypedEnum)
-
-        # to implement this, we need to overload the getattr
-        class D(C):
-            def __getattribute__(self, attr):
-                obj = object.__getattribute__(self, attr)
-                if hasattr(obj, '__get__'):
-                    print('getting __get__')
-                    return obj.__get__(self)
-                else:
-                    return obj
-
-            def __setattr__(self, attr, value):
-                if not hasattr(self, attr):
-                    object.__setattr__(self, attr, value)
-                    return
-                obj = object.__getattribute__(self, attr)
-                if hasattr(obj, '__set__'):
-                    print('setting __set__')
-                    obj.__set__(self, value)
-                else:
-                    setattr(self, attr, value)
-
-        c = D()
-        c.e = 'b'
-        assert c.e == 'b' and isinstance(c.e, str)
-        self.assertRaises(ValueError, setattr, c, 'e', 'z')
 
 
 class TestLoadProperties(unittest.TestCase):
