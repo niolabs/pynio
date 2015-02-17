@@ -1,4 +1,4 @@
-from copy import deepcopy
+from copy import deepcopy, copy
 import json
 
 from .properties import load_block
@@ -33,7 +33,6 @@ class Block(object):
         config['type'] = self._type
         # load template and then reload config
         self.template = self._instance.blocks_types[self._type].template
-        # import ipdb; ipdb.set_trace()
         self.config = config
         # put onto the web
         self._put('blocks/{}'.format(self._name), self.json())
