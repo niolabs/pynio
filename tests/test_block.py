@@ -37,9 +37,11 @@ class TestBlock(unittest.TestCase):
 
         def test_load_template(self):
             from .example_data import SimulatorFastTemplate
+            instance = lambda: None
+            instance.droplog = print
             btype = 'SimulatorFast'
             b = Block('sim', btype)
-            b.load_template(btype, SimulatorFastTemplate)
+            b.load_template(btype, SimulatorFastTemplate, instance)
             from pprint import pprint
             print()
             pprint(b.template)
@@ -47,9 +49,11 @@ class TestBlock(unittest.TestCase):
 
         def test_typed_config(self):
             from .example_data import SimulatorFastTemplate, SimulatorFastConfig
+            instance = lambda: None
+            instance.droplog = print
             btype = 'SimulatorFast'
             b = Block('sim', btype, config=SimulatorFastConfig)
-            b.load_template(btype, SimulatorFastTemplate)
+            b.load_template(btype, SimulatorFastTemplate, instance)
             b.config.interval.days = 10
             self.assertEqual(b.config.interval.days, 10)
             self.assertRaises(ValueError, setattr,
@@ -57,18 +61,21 @@ class TestBlock(unittest.TestCase):
 
         def test_load_all_templates(self):
             from .example_data import BlocksTemplatesAll
+            instance = lambda: None
+            instance.droplog = MagicMock()
             for btype, template in BlocksTemplatesAll.items():
                 b = Block(btype, btype)
-                b.load_template(btype, template)
+                b.load_template(btype, template, instance)
 
         def test_load_all_configs(self):
             from .example_data import BlocksTemplatesAll, BlocksConfigsAll
-            droplog = MagicMock()
+            instance = lambda: None
+            instance.droplog = MagicMock()
 
             blocks_types = {}
             for btype, template in BlocksTemplatesAll.items():
                 b = Block(btype, btype)
-                b.load_template(btype, template)
+                b.load_template(btype, template, instance)
                 blocks_types[btype] = b
 
             blocks = {}
@@ -76,8 +83,8 @@ class TestBlock(unittest.TestCase):
                 # import ipdb; ipdb.set_trace()
                 btype = config['type']
                 b = deepcopy(blocks_types[btype])
-                b.droplog = droplog
                 b.config = config
                 blocks[bname] = b
 
+            droplog = instance.droplog
             self.assertEqual(droplog.call_count, 2)

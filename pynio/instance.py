@@ -9,8 +9,8 @@ class Instance(REST):
 
     def __init__(self, host='127.0.0.1', port=8181, creds=None):
         super().__init__(host, port, creds)
-
-        self.blocks = self._get_blocks()
+        self.droplog = print
+        self.blocks_types, self.blocks = self._get_blocks()
         self.services = self._get_services()
 
     def nio(self):
@@ -28,14 +28,20 @@ class Instance(REST):
         service.save()
 
     def _get_blocks(self):
-        blks = {}
-        resp = self._get('blocks')
-        for blk in resp:
-            blks[blk] = Block(resp[blk].get('name'),
-                              resp[blk].get('type'),
-                              resp[blk],
-                              instance=self)
-        return blks
+        blocks_types = {}
+        for btype, template in self._get('blocks_types').items():
+            b = Block(btype, btype, instance=self)
+            b.load_template(btype, template)
+            blocks_types[btype] = b
+
+        blocks = {}
+        for bname, config in self._get('blocks').items():
+            btype = config['type']
+            b = blocks_types[btype].copy(instance=self)
+            b.config = config
+            blocks[bname] = b
+
+        return blocks_types, blocks
 
     def _get_services(self):
         services = {}

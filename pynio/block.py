@@ -16,7 +16,6 @@ class Block(object):
         self._template = None
         self._config = config or {}
         self._instance = instance
-        self.droplog = None
 
     def save(self):
         """ PUTs the block config to nio.
@@ -28,9 +27,14 @@ class Block(object):
         if not self._instance:
             raise Exception('Block is not associated with an instance')
 
+        # setup config
         config = self.config
         config['name'] = self._name
         config['type'] = self._type
+        # load template and then reload config
+        self.template = self._instance.blocks_types[self._type].template
+        self.config = config
+        # put onto the web
         self._put('blocks/{}'.format(self._name), config)
         self._instance.blocks[self._name] = self
 
@@ -49,6 +53,11 @@ class Block(object):
     def template(self):
         return self._template
 
+    @template.setter
+    def template(self, value):
+        # do type checking later
+        self._template = value
+
     @property
     def config(self):
         return self._config
@@ -60,14 +69,20 @@ class Block(object):
             return
         config = deepcopy(self._template)
         config.readonly = False
-        config.update(value, drop_unknown=True, drop_logger=self.droplog)
+        config.update(value, drop_unknown=True,
+                      drop_logger=self._instance.droplog)
         self._config = config
 
     def json(self):
         return json.dumps(self._config.__basic__())
 
-    def load_template(self, type, value):
+    def load_template(self, type, value, instance=None):
         '''Set the template with a template gotten from nio'''
+        if instance is not None:
+            self._instance = instance
+        if self._instance is None:
+            raise TypeError("Block is not tied to an instance")
+
         template = load_block(value)
         template.type = type
         template.name = ''
@@ -82,3 +97,14 @@ class Block(object):
             s._remove(self)
         self._instance.blocks.pop(self._name)
         self._instance = None  # make sure it isn't used anymore
+
+    def copy(self, name, instance=None):
+        '''return a copy of self, but with a new name and not tied to
+        any instance'''
+        out = copy(self)
+        out._instance = instance
+        out._name = ''
+        out.config.name = out._name
+        return out
+
+
