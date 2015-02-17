@@ -36,7 +36,7 @@ class AttrDict(dict):
         if isinstance(value, dict):
             value = value.items()
         for key, value in value:
-            if isinstance(value, dict):
+            if hasattr(self[key], 'update'):
                 self[key].update(value)
             else:
                 self[key] = value
@@ -149,10 +149,16 @@ class TypedDict(AttrDict):
         object.__setattr__(self, '_convert', convert)
         super().__init__(*args, **kwargs)
 
-    def update(self, value, drop_unknown=False):
+    def update(self, value, drop_unknown=False, drop_logger=None):
         if drop_unknown:
-            value = {key: value for (key, value) in value.items()
-                     if key in self}
+            newv = {}
+            for key, value in value.items():
+                if key in self:
+                    newv[key] = value
+                else:
+                    if drop_logger is not None:
+                        drop_logger("Value Dropped: {}".format(key))
+            value = newv
         return AttrDict.update(self, value)
 
     def _convert_value(self, value, curval):
@@ -189,13 +195,13 @@ class TypedDict(AttrDict):
     def __set__(self, obj, value):
         raise TypeError("TypedDict is a protected member")
 
-    def to_basic(self):
+    def __basic__(self):
         '''returns self in only basic python types.'''
         out = {}
         for key in self:
             value = dict.__getitem__(self, key)
-            if hasattr(value, 'to_basic'):
-                value = value.to_basic()
+            if hasattr(value, '__basic__'):
+                value = value.__basic__()
             elif hasattr(value, '__get__'):
                 value = value.__get__(self, self.__class__)
             out[key] = value
@@ -216,16 +222,21 @@ class TypedList(list):
         convert = self._convert
         self.extend(tuple(*args, **kwargs))
 
-    def to_basic(self):
+    def __basic__(self):
         '''returns self in only basic python types.'''
         out = []
         for value in list.__iter__(self):
-            if hasattr(value, 'to_basic'):
-                value = value.to_basic()
+            if hasattr(value, '__basic__'):
+                value = value.__basic__()
             elif hasattr(value, '__get__'):
                 value = value.__get__(self, self.__class__)
             out.append(value)
         return out
+
+    def update(self, value):
+        new = TypedList(value)  # check types
+        self.clear()
+        self.extend(new)
 
     def _convert_value(self, value):
         if not isinstance(value, type):

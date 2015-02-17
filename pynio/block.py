@@ -16,6 +16,7 @@ class Block(object):
         self._template = None
         self._config = config or {}
         self._instance = instance
+        self.droplog = None
 
     def save(self):
         """ PUTs the block config to nio.
@@ -52,9 +53,6 @@ class Block(object):
     def config(self):
         return self._config
 
-    def json(self):
-        return json.dumps(self._config.to_basic())
-
     @config.setter
     def config(self, value):
         if self._template is None:
@@ -62,8 +60,11 @@ class Block(object):
             return
         config = deepcopy(self._template)
         config.readonly = False
-        config.update(value, drop_unknown=True)
+        config.update(value, drop_unknown=True, drop_logger=self.droplog)
         self._config = config
+
+    def json(self):
+        return json.dumps(self._config.__basic__())
 
     def load_template(self, type, value):
         '''Set the template with a template gotten from nio'''

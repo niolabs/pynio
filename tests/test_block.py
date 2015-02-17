@@ -63,6 +63,8 @@ class TestBlock(unittest.TestCase):
 
         def test_load_all_configs(self):
             from .example_data import BlocksTemplatesAll, BlocksConfigsAll
+            droplog = MagicMock()
+
             blocks_types = {}
             for btype, template in BlocksTemplatesAll.items():
                 b = Block(btype, btype)
@@ -71,8 +73,11 @@ class TestBlock(unittest.TestCase):
 
             blocks = {}
             for bname, config in BlocksConfigsAll.items():
+                # import ipdb; ipdb.set_trace()
                 btype = config['type']
                 b = deepcopy(blocks_types[btype])
+                b.droplog = droplog
                 b.config = config
                 blocks[bname] = b
 
+            self.assertEqual(droplog.call_count, 2)
