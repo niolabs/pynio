@@ -73,7 +73,10 @@ class Block(object):
         self._config = config
 
     def json(self):
-        return self._config.__basic__()
+        if hasattr(self._config, '__basic__'):
+            return self._config.__basic__()
+        else:
+            return self._config
 
     def _load_template(self, type, value, instance=None):
         '''Set the template with a template gotten from nio'''

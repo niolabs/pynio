@@ -13,8 +13,10 @@ class TestBlock(unittest.TestCase):
             self.assertEqual(b.type, 'type')
 
         def test_save(self):
+            import ipdb; ipdb.set_trace()
             b = Block('name', 'type')
-            b.config = {'key': 'val'}
+            # b._config = {'key': 'val'}
+            b._config = MagicMock()
             b._instance = MagicMock() # Associate with instance but not for real
             b._put = MagicMock()
             b.save()
@@ -27,7 +29,7 @@ class TestBlock(unittest.TestCase):
 
         def test_save_with_no_instance(self):
             b = Block('name', 'type')
-            b.config = {'key': 'val'}
+            b._config = {'key': 'val'}
             b._put = MagicMock()
             with self.assertRaises(Exception) as context:
                 b.save()
@@ -41,7 +43,7 @@ class TestBlock(unittest.TestCase):
             instance.droplog = print
             btype = 'SimulatorFast'
             b = Block('sim', btype)
-            b.load_template(btype, SimulatorFastTemplate, instance)
+            b._load_template(btype, SimulatorFastTemplate, instance)
             from pprint import pprint
             print()
             pprint(b.template)
@@ -53,7 +55,7 @@ class TestBlock(unittest.TestCase):
             instance.droplog = print
             btype = 'SimulatorFast'
             b = Block('sim', btype, config=SimulatorFastConfig)
-            b.load_template(btype, SimulatorFastTemplate, instance)
+            b._load_template(btype, SimulatorFastTemplate, instance)
             b.config.interval.days = 10
             self.assertEqual(b.config.interval.days, 10)
             self.assertRaises(ValueError, setattr,
@@ -65,7 +67,7 @@ class TestBlock(unittest.TestCase):
             instance.droplog = MagicMock()
             for btype, template in BlocksTemplatesAll.items():
                 b = Block(btype, btype)
-                b.load_template(btype, template, instance)
+                b._load_template(btype, template, instance)
 
         def test_load_all_configs(self):
             from .example_data import BlocksTemplatesAll, BlocksConfigsAll
@@ -75,7 +77,7 @@ class TestBlock(unittest.TestCase):
             blocks_types = {}
             for btype, template in BlocksTemplatesAll.items():
                 b = Block(btype, btype)
-                b.load_template(btype, template, instance)
+                b._load_template(btype, template, instance)
                 blocks_types[btype] = b
 
             blocks = {}
