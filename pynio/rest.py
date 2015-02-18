@@ -1,5 +1,10 @@
-import requests
+import logging
 import json
+import time
+
+import requests
+
+log = logging.getLogger(__name__)
 
 
 class REST(object):
