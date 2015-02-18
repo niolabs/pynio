@@ -29,7 +29,7 @@ class AttrDict(dict):
         # Make all internal dictionaries AttrDicts. Make sure this
         # Overrides any super class's settings
         for key, value in self.items():
-            if isinstance(value, dict):
+            if type(value) == dict:
                 dict.__setitem__(self, key, self.__class__(value))
 
     def update(self, value):
