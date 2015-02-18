@@ -67,11 +67,11 @@ class TestREST(unittest.TestCase):
     @patch('requests.get')
     def test_raise_wrong(self, get, sleep):
         raise_count = 1
-        raises = iter_raise(NameError,
+        raises = iter_raise(ZeroDivisionError,
                             raise_count, None)
         response = mock_response()
         response.raise_for_status = lambda: next(raises)
         get.return_value = response
         r = rest.REST()
-        with self.assertRaises(NameError):
+        with self.assertRaises(ZeroDivisionError):
             r._get('end', retry=raise_count)
