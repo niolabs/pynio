@@ -62,3 +62,16 @@ class TestREST(unittest.TestCase):
         raises.count = 0
         with self.assertRaises(requests.exceptions.ConnectionError):
             r._get('end', retry=raise_count - 1)
+
+    @patch('time.sleep')
+    @patch('requests.get')
+    def test_raise_wrong(self, get, sleep):
+        raise_count = 1
+        raises = iter_raise(NameError,
+                            raise_count, None)
+        response = mock_response()
+        response.raise_for_status = lambda: next(raises)
+        get.return_value = response
+        r = rest.REST()
+        with self.assertRaises(NameError):
+            r._get('end', retry=raise_count)
