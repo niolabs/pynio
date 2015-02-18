@@ -16,3 +16,14 @@ def mock_instance(types):
                                         'key': 'std'}})
     }
     return instance
+
+
+def mock_service():
+    service = MagicMock(spec=[
+        'start', 'stop', 'delete', 'command'])
+    service.start = MagicMock()
+    service.stop = MagicMock()
+    service.stop = MagicMock()
+    service.delete = MagicMock()
+    service.command = MagicMock()
+    return service
