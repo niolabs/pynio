@@ -3,7 +3,8 @@ from copy import copy, deepcopy
 
 import unittest
 
-from .example_data import (SimulatorFastTemplate, SimulatorFastConfig)
+from .example_data import (SimulatorFastTemplate, SimulatorFastConfig,
+                           SimulatorTemplate, SimulatorConfig)
 
 from pynio.properties import (AttrDict, SolidDict,
                               TypedDict, TypedList, TypedEnum,
@@ -178,8 +179,13 @@ class TestLoadProperties(unittest.TestCase):
             'value': -3.14
         }]
 
-        t['properties']['attributes']['default'] = default
         c['attributes'].extend(default)
+        # make sure that the object updates properly
+        # import ipdb; ipdb.set_trace()
+        blk.update(c)
+        self.assertEqual(blk.__basic__(), c)
+
+        t['properties']['attributes']['default'] = default
         blk = load_block(t, 'template')
         self.assertEqual(blk.__basic__(), c)
 
@@ -188,6 +194,9 @@ class TestLoadProperties(unittest.TestCase):
         blk.name = 'fastsim'
         blk.type = 'SimulatorFast'
         self.assertEqual(blk.__basic__(), SimulatorFastConfig)
+        blk = load_block(SimulatorTemplate)
+        blk.update(SimulatorConfig)
+        self.assertEqual(blk.__basic__(), SimulatorConfig)
 
     def test_set_simulator(self):
         '''Which api would you rather use?'''

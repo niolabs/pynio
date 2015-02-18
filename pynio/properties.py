@@ -234,7 +234,7 @@ class TypedList(list):
         return out
 
     def update(self, value):
-        new = TypedList(value)  # check types
+        new = TypedList(self._type, value)  # check types
         self.clear()
         self.extend(new)
 
