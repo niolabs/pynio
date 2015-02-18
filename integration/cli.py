@@ -1,4 +1,12 @@
-from pynio import Instance, Service, Block
+try:
+    from pynio import Instance, Service, Block
+except ImportError:
+    import sys
+    import os
+    base = lambda p: os.path.split(p)[0]
+    sys.path.insert(1, base(base(__file__)))
+    print(sys.path[1])
+    from pynio import Instance, Service, Block
 
 # from tools import pplist
 
