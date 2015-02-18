@@ -1,4 +1,3 @@
-from pprint import pprint
 from enum import Enum
 from copy import copy, deepcopy
 
@@ -105,7 +104,7 @@ class TestTypedList(unittest.TestCase):
 
 
 class TestTypedEnum(unittest.TestCase):
-    def test_basic(self):
+    def test_value_enum_only(self):
         venum = TypedEnum(abc)
         venum.value = 'a'
         venum.value = 1
@@ -127,15 +126,24 @@ class TestTypedEnum(unittest.TestCase):
 class TestLoadProperties(unittest.TestCase):
     def test_load_simulator_template(self):
         blk = load_block(SimulatorFastTemplate)
-        print()
-        pprint(blk)
+        blk.name = 'fastsim'
+        blk.type = 'SimulatorFast'
+        self.assertEqual(blk.__basic__(), SimulatorFastConfig)
 
     def test_set_simulator(self):
+        '''Which api would you rather use?'''
         blk = load_block(SimulatorFastTemplate)
+        blk.type = 'SimulatorFast'
+        blk.name = 'newsim'
         blk.attribute.name = 'newsim'
         blk.attribute.value.end = 5.8
         blk.interval.days = 100
-        pprint(blk)
+        config = deepcopy(SimulatorFastConfig)
+        config['name'] = 'newsim'
+        config['attribute']['name'] = 'newsim'
+        config['attribute']['value']['end'] = 5
+        config['interval']['days'] = 100
+        self.assertEqual(config, blk.__basic__())
 
     def test_typecheck_simulator(self):
         blk = load_block(SimulatorFastTemplate)
