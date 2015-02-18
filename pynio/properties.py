@@ -239,9 +239,12 @@ class TypedList(list):
         self.extend(new)
 
     def _convert_value(self, value):
-        if not isinstance(value, type):
+        if hasattr(self._type, 'update'):
+            _type = deepcopy(self._type)
+            _type.update(value)
+            value = _type
+        elif not isinstance(value, type):
             return self._type(value)
-            raise TypeError(value)
         return value
 
     def append(self, value):
@@ -319,10 +322,13 @@ TypedList.TYPE = 'list'
 TypedEnum.TYPE = 'select'
 
 
-def load_block(template):
+def load_block(template, type=None):
     '''Parsing function to load a block from a template dictionary'''
     template = deepcopy(template)
-    return load_properties(template['properties'])
+    config = load_properties(template['properties'])
+    if type is not None:
+        config.type = type
+    return config
 
 
 def load_properties(properties, obj=Properties):
@@ -352,10 +358,16 @@ def load_template(template):
 
 
 def load_list(template):
-    default = template['default']
-    template = load_template(template['template'])
-    ttype = type(template)
-    return TypedList(ttype, default)
+    default = template.get('default', [])
+    if 'type' not in template:
+        # Lists have an interesting feature where they assume you know
+        # their attributes are objects if they don't have a type
+        template = {
+            'type': 'object',
+            'template': template['template']
+        }
+    template = load_template(template)
+    return TypedList(template, default)
 
 
 # Define all the properties and how to load them when you get their dict

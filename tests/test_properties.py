@@ -123,7 +123,66 @@ class TestTypedEnum(unittest.TestCase):
         self.assertEqual(venum.__get__(None, None), 'b')
 
 
+template = {
+    'name': 'template',
+    'properties': {
+        'name': {
+            'type': 'str',
+            'title': None,
+        },
+        'type': {
+            "type": "str",
+            "title": None
+        },
+        'value': {
+            'type': 'int',
+            'title': 'Value',
+            'default': 0
+        }
+    }
+}
+
+config = {
+    'name': '',
+    'type': 'template',
+    'value': 0
+}
+
+
 class TestLoadProperties(unittest.TestCase):
+    def test_load_simple(self):
+        blk = load_block(template, 'template')
+        self.assertEqual(blk.__basic__(), config)
+
+    def test_load_list(self):
+        t = deepcopy(template)
+        t['properties']['attributes'] = {
+            'type': 'list',
+            'template': {
+                'name': {
+                    'type': 'str',
+                    'default': 'attrname'
+                },
+                'value': {
+                    'type': 'float',
+                    'default': 42.2
+                }
+            }
+        }
+        blk = load_block(t, 'template')
+        c = deepcopy(config)
+        c['attributes'] = []
+        self.assertEqual(blk.__basic__(), c)
+        default = [{
+            'name': 'othername',
+            'value': -3.14
+        }]
+
+        t['properties']['attributes']['default'] = default
+        c['attributes'].extend(default)
+        blk = load_block(t, 'template')
+        self.assertEqual(blk.__basic__(), c)
+
     def test_load_simulator_template(self):
         blk = load_block(SimulatorFastTemplate)
         blk.name = 'fastsim'
