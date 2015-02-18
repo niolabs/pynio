@@ -72,7 +72,7 @@ class Instance(REST):
         '''Start an iterator of services. This is designed to ensure that
         services start as quickly as possible, even under heavy loads'''
         for s in ProgressBar('Starting:', print=self.print_function)(services):
-            s.start()
+            Request(s, s.start).complete('started')
 
     def stop(self, services):
         '''Stop an iterator of services as fast as possible'''
