@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 from copy import deepcopy
 
 from pynio import Block
+from .mock import mock_instance
 
 
 class TestBlock(unittest.TestCase):
@@ -13,10 +14,12 @@ class TestBlock(unittest.TestCase):
             self.assertEqual(b.type, 'type')
 
         def test_save(self):
-            b = Block('name', 'type')
-            # b._config = {'key': 'val'}
-            b._config = MagicMock()
-            b._instance = MagicMock() # Associate with instance but not for real
+            b = Block('name', 'type', {'key': 'val'})
+            b._instance = mock_instance({
+                'type': {'template': {
+                    'type': 'type', 'name': '', 'key': 'std'}
+                }
+            })
             b._put = MagicMock()
             b.save()
             self.assertTrue(b._put.called)
