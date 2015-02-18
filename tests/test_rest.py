@@ -58,7 +58,7 @@ class TestREST(unittest.TestCase):
         self.assertEqual(get.call_args[0][0], 'http://127.0.0.1:8181/end')
         self.assertEqual(sleep.call_count, raise_count)
 
-        # make sure it fails when we retry too much
+        # make sure it fails when we don't retry enough
         raises.count = 0
         with self.assertRaises(requests.exceptions.ConnectionError):
             r._get('end', retry=raise_count - 1)
