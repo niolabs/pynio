@@ -362,10 +362,7 @@ def load_list(template):
     if 'type' not in template:
         # Lists have an interesting feature where they assume you know
         # their attributes are objects if they don't have a type
-        template = {
-            'type': 'object',
-            'template': template['template']
-        }
+        template['type'] = 'object'
     template = load_template(template)
     return TypedList(template, default)
 
