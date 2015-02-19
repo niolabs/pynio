@@ -19,7 +19,7 @@ class REST(object):
 
     def _get(self, endpoint, timeout=None, data=None, retry=0):
         '''Performs a get with some amounts of retrys'''
-        if data is not None:
+        if isinstance(data, dict):
             data = json.dumps(data)
         for i in range(retry + 1):
             try:
