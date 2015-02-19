@@ -19,15 +19,6 @@ class TestInstance(unittest.TestCase):
 
     # TODO: Create a test that loads system settings
 
-    def test_start_stop(self, *args):
-        i = Instance()
-        services = [mock_service() for _ in range(5)]
-        all_true = [True for _ in range(5)]
-        i.start(services)
-        self.assertEqual([s.start.called for s in services], all_true)
-        i.stop(services)
-        self.assertEqual([s.stop.called for s in services], all_true)
-
     def test_delete_all(self, *args):
         names = ['one', 'two', 'three']
         i = Instance()

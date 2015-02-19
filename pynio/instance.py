@@ -1,7 +1,6 @@
 from pynio.rest import REST
 from pynio.block import Block
 from pynio.service import Service
-from pynio.progress import ProgressBar
 
 
 class Instance(REST):
@@ -72,27 +71,14 @@ class Instance(REST):
         service.save()
         return service
 
-    def start(self, services):
-        '''Start an iterator of services. This is designed to ensure that
-        services start as quickly as possible, even under heavy loads'''
-        for s in ProgressBar('Starting:', print=self.print_function)(services):
-            s.start()
-
-    def stop(self, services):
-        '''Stop an iterator of services as fast as possible'''
-        for s in ProgressBar('Stopping:', print=self.print_function)(services):
-            s.stop()
-
     def DELETE_ALL(self):
         '''Deletes all blocks and services from an instance
         regardless of whether or not they can be loaded. Does a reset after
         '''
         blocks, services = self._get('blocks'), self._get('services')
-        for b in ProgressBar("Deleting Blocks", print=self.print_function)(
-                blocks):
+        for b in blocks:
             self._delete('blocks/{}'.format(b))
-        for s in ProgressBar("Deleting Services", print=self.print_function)(
-                services):
+        for s in services:
             self._get('services/{}/stop'.format(s))
             self._delete('services/{}'.format(s))
         self.reset()
