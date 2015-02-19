@@ -4,24 +4,26 @@ from unittest.mock import MagicMock, patch
 from .mock import mock_service
 
 
+class MockInstance(Instance):
+
+    def __init__(self, host='127.0.0.1', port=8181, creds=None):
+        self._get_blocks = MagicMock()
+        self._get_blocks.return_value = {}, {}
+        self._get_services = MagicMock()
+        self._get_services.return_value = {}
+        super().__init__(host, port, creds)
+
+
 class TestInstance(unittest.TestCase):
-    def setUp(self):
-        blks = patch.object(Instance, '_get_blocks')
-        blks.start()
-        Instance._get_blocks.return_value = None, None
-        servs = patch.object(Instance, '_get_services')
-        servs.start()
 
     def test_instance(self):
-        i = Instance()
+        i = MockInstance()
         self.assertEqual(i.host, '127.0.0.1')
         self.assertEqual(i.port, 8181)
 
-    # TODO: Create a test that loads system settings
-
     def test_delete_all(self, *args):
         names = ['one', 'two', 'three']
-        i = Instance()
+        i = MockInstance()
         i._get = MagicMock()
         i._get.return_value = names
         i._delete = MagicMock()
