@@ -48,7 +48,7 @@ class TestInstance(unittest.TestCase):
         delete_called = [delete_list[n][0][0] for
                             n in range(len(delete_list))]
 
-        self.assertEqual(self._get.call_count, 2 + len(names))
-        self.assertEqual(self._delete.call_count, len(names) * 2)
+        self.assertEqual(i._get.call_count, 2 + len(names))
+        self.assertEqual(i._delete.call_count, len(names) * 2)
         self.assertEqual(get_called, get)
         self.assertEqual(delete_called, delete)

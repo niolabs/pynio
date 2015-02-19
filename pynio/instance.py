@@ -59,14 +59,18 @@ class Instance(REST):
 
     def create_block(self, name, type, config=None):
         '''Convenience function to create a block and add it to instance'''
-        return Block(name, type, config, instance=self)
+        block = Block(name, type, config, instance=self)
+        block.save()
+        return block
 
     def create_service(self, name, type=None, config=None):
         '''Convenience function to create a service and add it to instance'''
         if type is None:
-            return Service(name, config=config, instance=self)
+            service = Service(name, config=config, instance=self)
         else:
-            return Service(name, type, config=config, instance=self)
+            service = Service(name, type, config=config, instance=self)
+        service.save()
+        return service
 
     def start(self, services):
         '''Start an iterator of services. This is designed to ensure that
