@@ -107,6 +107,8 @@ class Service(object):
         self.connect(blk)
         if self._instance:
             self.save()
+            blk.save()
+        return blk
 
     def _status(self):
         """ Returns the status of the Service. """
