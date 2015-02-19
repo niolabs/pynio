@@ -17,8 +17,14 @@ class REST(object):
         self._creds = creds or ('User', 'User')
         self._url = 'http://{}:{}/{}'.format(host, port, '{}')
 
-    def _get(self, endpoint, timeout=None, data=None, retry=0):
-        '''Performs a get with some amounts of retrys'''
+    def _get(self, endpoint, timeout=None, data=None, retry=0, json=True):
+        '''Performs a get with some amounts of retrys
+
+        Keyword Arguments:
+            json -- if True, `json()` will be automatically called on the
+                request object, otherwise the request object will be
+                returned
+        '''
         if isinstance(data, dict):
             data = json.dumps(data)
         for i in range(retry + 1):
@@ -36,7 +42,10 @@ class REST(object):
                     time.sleep(1)
         else:
             raise E
-        return r.json()
+        if json:
+            return r.json()
+        else:
+            return r
 
     def _put(self, endpoint, config=None, timeout=None):
         config = config or {}
