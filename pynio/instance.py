@@ -7,7 +7,7 @@ from pynio.progress import ProgressBar
 class Instance(REST):
     """ Interface for a running nio instance.
     """
-    print_function = print
+    print_function = lambda *args, **kwargs: None
 
     def __init__(self, host='127.0.0.1', port=8181, creds=None):
         super().__init__(host, port, creds)
