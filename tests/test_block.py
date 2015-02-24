@@ -13,6 +13,10 @@ class TestBlock(unittest.TestCase):
             self.assertEqual(b.name, 'name')
             self.assertEqual(b.type, 'type')
 
+        def test_noname(self):
+            with self.assertRaises(ValueError):
+                Block('', 'type')
+
         def test_save(self):
             b = Block('name', 'type', {'key': 'val'})
             b._instance = mock_instance({
