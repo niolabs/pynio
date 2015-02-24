@@ -38,6 +38,14 @@ class TestAttrDict(unittest.TestCase):
         attr.enum = 0
         assert attr.enum == 'a'
 
+    def test_set_update(self):
+        '''Makes sure that object can set values like "update" that are
+        also attributes (through item assignment)'''
+        attrdict = AttrDict(mydict)
+        attrdict['update'] = 'hi'
+        self.assertNotEqual(attrdict.update, attrdict['update'])
+        self.assertEqual(attrdict['update'], 'hi')
+
 # class TestSolid(unittest.TestCase):
 #     def test_basic(self):
 #         solid = SolidDict(mydict)
@@ -61,6 +69,19 @@ class TestTypedDict(unittest.TestCase):
         # import ipdb; ipdb.set_trace()
         convert = TypedDict(mydict)
         self.assertRaises(ValueError, setattr, convert, 'c', 'hello')
+
+    def test_set_update(self):
+        '''Makes sure that object can set values like "update" that are
+        also attributes (through item assignment)'''
+        attrdict = TypedDict(mydict)
+        attrdict['update'] = 'hi'
+        self.assertNotEqual(attrdict.update, 'hi')
+        self.assertEqual(attrdict['update'], 'hi')
+        attrdict.update({
+            'update': 'hello'
+        })
+        self.assertNotEqual(attrdict.update, 'hello')
+        self.assertEqual(attrdict['update'], 'hello')
 
     def test_readonly(self):
         frozen = TypedDict(mydict)
