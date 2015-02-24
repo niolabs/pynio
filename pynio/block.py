@@ -16,6 +16,10 @@ class Block(object):
         self._config = config or {}
         self._instance = instance
         self._config['name'] = name
+        if 'type' in self._config:
+            if type != config['type']:
+                raise ValueError("Types do not match: {} != {}".format(
+                    type, config['type']))
         self._config['type'] = type
 
     def save(self):
