@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, patch
+import json
 
 import requests
 
@@ -76,3 +77,27 @@ class TestREST(unittest.TestCase):
         r = rest.REST()
         with self.assertRaises(ZeroDivisionError):
             r._get('end', retry=raise_count)
+
+    @patch('requests.get')
+    def test_nojson(self, get):
+        response = mock_response()
+        get.return_value = response
+        r = rest.REST()
+        r._get('foo', decode_json=False)
+        self.assertTrue(get.called)
+        self.assertFalse(response.json.called)
+        self.assertTrue(response.raise_for_status.called)
+        self.assertEqual(get.call_args[0][0], 'http://127.0.0.1:8181/foo')
+
+    @patch('requests.get')
+    def test_data(self, get):
+        response = mock_response()
+        get.return_value = response
+        r = rest.REST()
+        data = {'foo': 'bar'}
+        r._get('foo', data=data)
+        self.assertTrue(get.called)
+        self.assertTrue(response.json.called)
+        self.assertTrue(response.raise_for_status.called)
+        self.assertEqual(get.call_args[0][0], 'http://127.0.0.1:8181/foo')
+        self.assertEqual(get.call_args[1]['data'], json.dumps(data))
