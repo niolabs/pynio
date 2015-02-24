@@ -73,7 +73,10 @@ class TestTypedDict(unittest.TestCase):
     def test_set_update(self):
         '''Makes sure that object can set values like "update" that are
         also attributes (through item assignment)'''
-        attrdict = TypedDict(mydict)
+        udict = deepcopy(mydict)
+        udict['update'] = 'start'
+        attrdict = TypedDict(udict)
+        self.assertEqual(attrdict['update'], 'start')
         attrdict['update'] = 'hi'
         self.assertNotEqual(attrdict.update, 'hi')
         self.assertEqual(attrdict['update'], 'hi')

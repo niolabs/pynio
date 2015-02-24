@@ -238,8 +238,7 @@ class TypedDict(AttrDict):
         if hasattr(actual, '__set__'):
             actual.__set__(None, value)
             return
-        curval = getattr(self, attr)
-        value = self._convert_value(value, curval)
+        value = self._convert_value(value, actual)
         AttrDict.__setattr__(self, attr, value, keyonly)
 
     def __set__(self, obj, value):
