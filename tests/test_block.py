@@ -31,9 +31,14 @@ class TestBlock(unittest.TestCase):
 
         def test_copy(self):
             b = Block('name', 'type', {'key': 'value'})
-            b.copy('newname')
+            bcopy = b.copy('newname')
             self.assertDictEqual({
                 'name': 'newname',
+                'type': 'type',
+                'key': 'value'
+            }, bcopy.config)
+            self.assertDictEqual({
+                'name': 'name',
                 'type': 'type',
                 'key': 'value'
             }, b.config)

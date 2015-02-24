@@ -111,7 +111,7 @@ class Block(object):
         any instance'''
         if not name:
             raise ValueError(name)
-        out = copy(self)
+        out = deepcopy(self)
         out._instance = instance
         out._name = name
         out.config['name'] = name
