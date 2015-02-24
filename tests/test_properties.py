@@ -200,12 +200,12 @@ class TestLoadProperties(unittest.TestCase):
 
     def test_load_simulator_template(self):
         blk = load_block(SimulatorFastTemplate)
-        blk.name = 'sim'
+        blk.name = 'fastsim'
         blk.type = 'SimulatorFast'
-        self.assertEqual(blk.__basic__(), SimulatorFastConfig)
+        self.assertDictEqual(blk.__basic__(), SimulatorFastConfig)
         blk = load_block(SimulatorTemplate)
         blk.update(SimulatorConfig)
-        self.assertEqual(blk.__basic__(), SimulatorConfig)
+        self.assertDictEqual(blk.__basic__(), SimulatorConfig)
 
     def test_set_simulator(self):
         '''Which api would you rather use?'''
