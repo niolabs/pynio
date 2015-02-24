@@ -29,6 +29,23 @@ class TestBlock(unittest.TestCase):
                                   'type': 'type',
                                   'key': 'val'})
 
+        def test_copy(self):
+            b = Block('name', 'type', {'key': 'value'})
+            bcopy = b.copy('newname')
+            self.assertDictEqual({
+                'name': 'newname',
+                'type': 'type',
+                'key': 'value'
+            }, bcopy.config)
+            self.assertDictEqual({
+                'name': 'name',
+                'type': 'type',
+                'key': 'value'
+            }, b.config)
+
+            with self.assertRaises(ValueError):
+                b.copy('')
+
         def test_save_with_no_instance(self):
             b = Block('name', 'type')
             b._config = {'key': 'val'}
@@ -92,3 +109,4 @@ class TestBlock(unittest.TestCase):
 
             droplog = instance.droplog
             self.assertEqual(droplog.call_count, 2)
+

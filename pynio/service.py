@@ -1,3 +1,4 @@
+from copy import deepcopy
 from .block import Block
 
 class Service(object):
@@ -5,7 +6,7 @@ class Service(object):
     def __init__(self, name, type='Service', config=None, instance=None):
         self._name = name
         self._type = type
-        self.config = config or {}
+        self.config = deepcopy(config) or {}
         self._instance = instance
 
     def save(self):

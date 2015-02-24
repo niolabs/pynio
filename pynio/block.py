@@ -1,4 +1,4 @@
-from copy import deepcopy, copy
+from copy import deepcopy
 
 from .properties import load_block
 
@@ -13,8 +13,14 @@ class Block(object):
         self._name = name
         self._type = type
         self._template = None
-        self._config = config or {}
+        self._config = deepcopy(config) or {}
         self._instance = instance
+        self._config['name'] = name
+        if 'type' in self._config:
+            if type != config['type']:
+                raise ValueError("Types do not match: {} != {}".format(
+                    type, config['type']))
+        self._config['type'] = type
 
     def save(self):
         """ PUTs the block config to nio.
@@ -103,10 +109,10 @@ class Block(object):
     def copy(self, name, instance=None):
         '''return a copy of self, but with a new name and not tied to
         any instance'''
-        out = copy(self)
+        if not name:
+            raise ValueError(name)
+        out = deepcopy(self)
         out._instance = instance
-        out._name = ''
-        out.config.name = out._name
+        out._name = name
+        out.config['name'] = name
         return out
-
-
