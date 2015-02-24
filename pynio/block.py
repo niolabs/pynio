@@ -1,4 +1,4 @@
-from copy import deepcopy, copy
+from copy import deepcopy
 
 from .properties import load_block
 
@@ -13,7 +13,7 @@ class Block(object):
         self._name = name
         self._type = type
         self._template = None
-        self._config = config or {}
+        self._config = deepcopy(config) or {}
         self._instance = instance
         self._config['name'] = name
         if 'type' in self._config:
