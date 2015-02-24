@@ -15,6 +15,8 @@ class Block(object):
         self._template = None
         self._config = config or {}
         self._instance = instance
+        self._config['name'] = name
+        self._config['type'] = type
 
     def save(self):
         """ PUTs the block config to nio.
@@ -108,7 +110,5 @@ class Block(object):
         out = copy(self)
         out._instance = instance
         out._name = name
-        out.config.name = name
+        out.config['name'] = name
         return out
-
-

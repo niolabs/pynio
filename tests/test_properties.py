@@ -200,7 +200,7 @@ class TestLoadProperties(unittest.TestCase):
 
     def test_load_simulator_template(self):
         blk = load_block(SimulatorFastTemplate)
-        blk.name = 'fastsim'
+        blk.name = 'sim'
         blk.type = 'SimulatorFast'
         self.assertEqual(blk.__basic__(), SimulatorFastConfig)
         blk = load_block(SimulatorTemplate)
