@@ -1,9 +1,12 @@
 from copy import deepcopy
 from .block import Block
 
+
 class Service(object):
 
     def __init__(self, name, type='Service', config=None, instance=None):
+        if not name:
+            raise ValueError("name cannot be blank")
         self._name = name
         self._type = type
         self.config = deepcopy(config) or {}

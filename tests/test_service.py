@@ -17,6 +17,10 @@ class TestService(unittest.TestCase):
         self.assertEqual(s.name, 'name')
         self.assertEqual(s.type, 'type')
 
+    def test_noname(self):
+        with self.assertRaises(ValueError):
+            Service('')
+
     def test_connect(self):
         s = Service('name', 'type')
         s.connect(TestBlock('one'), TestBlock('two'))

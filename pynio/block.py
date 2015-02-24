@@ -10,6 +10,8 @@ class Block(object):
     '''
 
     def __init__(self, name, type, config=None, instance=None):
+        if not name:
+            raise ValueError("Name cannot be blank")
         self._name = name
         self._type = type
         self._template = None
