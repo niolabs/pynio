@@ -52,8 +52,3 @@ def mock_service():
     service.delete = MagicMock()
     service.command = MagicMock()
     return service
-
-
-def throw(error):
-    '''used for one-liner raising'''
-    raise error

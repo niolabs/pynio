@@ -5,7 +5,6 @@ import json
 import requests
 
 from pynio import rest
-from .mock import throw
 
 
 def mock_response():
@@ -107,7 +106,7 @@ class TestREST(unittest.TestCase):
     @patch('requests.get')
     def test_get_text(self, get):
         response = mock_response()
-        response.json = lambda: throw(ValueError)
+        response.json.side_effect = ValueError()
         get.return_value = response
         r = rest.REST()
         value = r._get('foo')
