@@ -37,7 +37,6 @@ def mock_instance(type=template):
         'config', 'droplog',
         'blocks', 'blocks_types', 'services',
         '_put'])()
-    # instance.__init__ = MagicMock()
     instance.droplog = MagicMock()
     instance._put = MagicMock()
     instance._get = MagicMock()
