@@ -3,6 +3,13 @@ from pynio import Instance, Block, Service
 from unittest.mock import MagicMock, patch
 from .mock import mock_service, mock_instance, config, template
 
+def assertInstanceEqual(self, in1, in2):
+    ser1 = {sname: s.config for (sname, s) in in1.services.items()}
+    ser2 = {sname: s.config for (sname, s) in in2.services.items()}
+    self.assertDictEqual(ser1, ser2)
+    blks1 = {bname: b.json() for (bname, b) in in1.blocks.items()}
+    blks2 = {bname: b.json() for (bname, b) in in2.blocks.items()}
+    self.assertDictEqual(blks1, blks2)
 
 class MockInstance(Instance):
 
@@ -113,6 +120,7 @@ class TestInstance(unittest.TestCase):
         self.assertIsNot(s1, s2)
         self.assertIsNot(s1._instance, s2._instance)
         self.assertDictEqual(s1.config, s2.config)
+        assertInstanceEqual(self, in1, in2)
 
     def test_copy_service_blocks(self):
         in1 = mock_instance()
@@ -137,16 +145,17 @@ class TestInstance(unittest.TestCase):
         b1.config.value = 42
         self.assertNotEqual(b1.config.value, b2.config.value)
         s4, (b4, b5) = in2.copy_service(s3, True)
-        self.assertEqual(b1.config.value, b2.config.value)
+        self.assertEqual(in2.blocks['b1'].config.value, 42)
 
         # test blocks
-        s4_b1 = s4.blocks['b1']
-        self.assertEqual(s4_b1, b2.name)
+        s4_b1 = in2.blocks['b1']
+        self.assertEqual(s4_b1.name, b2.name)
         self.assertIsNot(s4_b1, b2)  # the object has been replaced
-        self.assertIsNot(s4_b1._instance, b2._instance)
-        self.assertNotEqual(s4_b1.config.value, b2.config.value)
+        self.assertIs(s4_b1._instance, b2._instance)  # instance is the same
+        self.assertEqual(s4_b1.config.value, 42)
 
         # test service
-        self.assertIsNot(s1, s2)
-        self.assertIsNot(s1._instance, s2._instance)
-        self.assertDictEqual(s1.config, s2.config)
+        self.assertIsNot(s3, s4)
+        self.assertIsNot(s3._instance, s4._instance)
+        self.assertDictEqual(s3.config, s4.config)
+        assertInstanceEqual(self, in1, in2)

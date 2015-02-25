@@ -128,4 +128,3 @@ class Block(object):
                 self._instance.services.values()
                 if next((True for b in service.blocks if b.name == name), False)
                 ]
-
