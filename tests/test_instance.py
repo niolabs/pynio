@@ -1,7 +1,7 @@
 import unittest
 from pynio import Instance, Block, Service
 from unittest.mock import MagicMock, patch
-from .mock import mock_service
+from .mock import mock_service, mock_instance, config, template
 
 
 class MockInstance(Instance):
@@ -62,3 +62,19 @@ class TestInstance(unittest.TestCase):
         self.assertEqual(i._delete.call_count, len(names) * 2)
         self.assertEqual(get_called, get)
         self.assertEqual(delete_called, delete)
+
+    def test_create_block(self):
+        instance = mock_instance()
+        blk = instance.create_block('name', 'type')
+        self.assertFalse(instance.droplog.called)
+        self.assertDictEqual(config, blk.json())
+        self.assertIsInstance(blk, Block)
+        self.assertIn(blk.name, instance.blocks)
+        self.assertIn(blk, instance.blocks.values())
+
+    def test_create_service(self):
+        instance = mock_instance()
+        service = instance.create_service('name')
+        self.assertIsInstance(service, Service)
+        self.assertIn(service.name, instance.services)
+        self.assertIn(service, instance.services.values())
