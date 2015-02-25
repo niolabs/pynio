@@ -1,7 +1,7 @@
 from copy import deepcopy
 import unittest
 from unittest.mock import MagicMock
-from pynio.service import Service
+from pynio.service import Service, Block
 from .mock import mock_instance, config, template
 
 
@@ -42,11 +42,12 @@ class TestService(unittest.TestCase):
 
     def test_create_block(self):
         s = Service('name', 'type')
-        s.create_block('one', 'blk')
+        blk = s.create_block('one', 'blk')
         self.assertEqual(
             s.config['execution'],
             [{'receivers': [], 'name': 'one'}]
         )
+        self.assertIsInstance(blk, Block)
 
     def test_create_block_instance(self):
         '''Test create block when there is an instance'''
@@ -61,6 +62,9 @@ class TestService(unittest.TestCase):
         )
         self.assertFalse(instance.droplog.called)
         self.assertDictEqual(c, blk.json())
+        self.assertIsInstance(blk, Block)
+        self.assertIn(blk.name, instance.blocks)
+        self.assertIn(blk, instance.blocks.values())
 
     def test_connect_one_to_two(self):
         s = Service('name', 'type')
