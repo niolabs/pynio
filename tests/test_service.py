@@ -155,3 +155,13 @@ class TestService(unittest.TestCase):
         self.assertListEqual(execution, [
             {'name': 'two', 'receivers': []}
         ])
+
+    def test_copy(self):
+        instance = mock_instance()
+        s = instance.create_service('name')
+        copy = s.copy('newname')
+        self.assertIs(copy._instance, None)
+        self.assertIs(s._instance, instance)
+        self.assertNotEqual(copy.config.pop('name'), s.config.pop('name'))
+        # other than the names, they are equal
+        self.assertDictEqual(copy.config, s.config)

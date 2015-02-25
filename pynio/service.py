@@ -155,3 +155,13 @@ class Service(object):
     @property
     def pid(self):
         return self._status()['pid']
+
+    def copy(self, name):
+        '''Return a copy of self
+        The copy will have a new name and not be tied to any instance
+        '''
+        out = deepcopy(self)
+        out._instance = None
+        out._name = name
+        out.config['name'] = name
+        return out
