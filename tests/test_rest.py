@@ -8,8 +8,9 @@ from pynio import rest
 
 
 def mock_response():
-    response = MagicMock(spec=['json', 'raise_for_status'])
+    response = MagicMock(spec=['json', 'raise_for_status', 'text'])
     response.json = MagicMock()
+    response.text = 'text'
     # response.raise_for_status = MagicMock()
     return response
 
@@ -79,11 +80,11 @@ class TestREST(unittest.TestCase):
             r._get('end', retry=raise_count)
 
     @patch('requests.get')
-    def test_nojson(self, get):
+    def test_raw_response(self, get):
         response = mock_response()
         get.return_value = response
         r = rest.REST()
-        r._get('foo', decode_json=False)
+        r._get('foo', raw_response=True)
         self.assertTrue(get.called)
         self.assertFalse(response.json.called)
         self.assertTrue(response.raise_for_status.called)
@@ -101,3 +102,12 @@ class TestREST(unittest.TestCase):
         self.assertTrue(response.raise_for_status.called)
         self.assertEqual(get.call_args[0][0], 'http://127.0.0.1:8181/foo')
         self.assertEqual(get.call_args[1]['data'], json.dumps(data))
+
+    @patch('requests.get')
+    def test_get_text(self, get):
+        response = mock_response()
+        response.json.side_effect = ValueError()
+        get.return_value = response
+        r = rest.REST()
+        value = r._get('foo')
+        self.assertEqual(value, 'text')

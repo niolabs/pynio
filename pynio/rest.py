@@ -18,7 +18,7 @@ class REST(object):
         self._url = 'http://{}:{}/{}'.format(host, port, '{}')
 
     def _get(self, endpoint, timeout=None, data=None, retry=0,
-             decode_json=True):
+             raw_response=False):
         '''Performs a get with some amounts of retrys
 
         Keyword Arguments:
@@ -43,10 +43,13 @@ class REST(object):
                     time.sleep(1)
         else:
             raise E
-        if decode_json:
-            return r.json()
-        else:
+        if raw_response:
             return r
+        else:
+            try:
+                return r.json()
+            except ValueError:
+                return r.text
 
     def _put(self, endpoint, config=None, timeout=None):
         config = config or {}
