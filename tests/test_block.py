@@ -127,3 +127,15 @@ class TestBlock(unittest.TestCase):
 
         droplog = instance.droplog
         self.assertEqual(droplog.call_count, 2)
+
+    def test_delete_block(self):
+        instance = mock_instance()
+        s = instance.create_service('foo')
+        b = s.create_block('one', 'type')
+        b2 = s.create_block('two', 'type')
+        s.connect(b, b2)
+        b.delete()
+        execution = s.config['execution']
+        self.assertListEqual(execution, [
+            {'name': 'two', 'receivers': []}
+        ])
