@@ -116,6 +116,7 @@ class Service(object):
 
     @property
     def blocks(self):
+        '''Return a list of blocks used by this service'''
         if not self._instance:
             raise TypeError("Can only get block objects when attached to an "
                             "instance")
