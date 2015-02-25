@@ -62,3 +62,5 @@ target/
 # project specific
 notebooks
 nioproject
+nioempty/
+prop_test.py
