@@ -139,3 +139,11 @@ class TestBlock(unittest.TestCase):
         self.assertListEqual(execution, [
             {'name': 'two', 'receivers': []}
         ])
+
+    def test_in_use(self):
+        instance = mock_instance()
+        s = instance.create_service('foo')
+        instance.create_service('bar')
+        blk = s.create_block('one', 'type')
+        use = blk.in_use()
+        self.assertListEqual(use, [s])

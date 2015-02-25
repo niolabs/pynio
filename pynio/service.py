@@ -114,6 +114,15 @@ class Service(object):
             blk.save()
         return blk
 
+    @property
+    def blocks(self):
+        '''Return a list of blocks used by this service'''
+        if not self._instance:
+            raise TypeError("Can only get block objects when attached to an "
+                            "instance")
+        blocks = self._instance.blocks
+        return [blocks[i['name']] for i in self.config.get('execution', [])]
+
     def _status(self):
         """ Returns the status of the Service. """
         return self._instance._get(

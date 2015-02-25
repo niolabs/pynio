@@ -118,3 +118,14 @@ class Block(object):
         out._name = name
         out.config['name'] = name
         return out
+
+    def in_use(self):
+        '''Return a list of services that use this block.'''
+        if not self._instance:
+            raise TypeError("Block must be tied to instance")
+        name = self.name
+        return [service for service in
+                self._instance.services.values()
+                if next((True for b in service.blocks if b.name == name), False)
+                ]
+
