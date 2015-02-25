@@ -53,7 +53,12 @@ class Service(object):
         # if block exists, add the receiever, otherwise init connection
         receivers = [] if blk2 is None else [blk2.name]
         if connection:
-            connection['receivers'].extend(receivers)
+            cr = connection['receivers']
+            cr.extend(receivers)
+            # remove duplicates but preserve order
+            seen = set()
+            seen_add = seen.add
+            cr[:] = [x for x in cr if not(x in seen or seen_add(x))]
         else:
             connection = {'name': blk1.name, 'receivers': receivers}
             execution.append(connection)

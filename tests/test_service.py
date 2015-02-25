@@ -40,6 +40,18 @@ class TestService(unittest.TestCase):
             [{'receivers': [], 'name': 'one'}]
         )
 
+    def test_connect_twice(self):
+        s = Service('name', 'type')
+        tb = TestBlock('one')
+        tb2 = TestBlock('two')
+        s.connect(tb, tb2)
+        s.connect(tb, tb2)
+        self.assertEqual(
+            s.config['execution'],
+            [{'name': 'two', 'receivers': []},
+             {'name': 'one', 'receivers': ['two']}]
+        )
+
     def test_create_block(self):
         s = Service('name', 'type')
         blk = s.create_block('one', 'blk')
