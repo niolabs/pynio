@@ -120,10 +120,7 @@ class Block(object):
         return out
 
     def in_use(self):
-        '''returns a dictionary of services that use this block
-
-        If instance is None (default) uses it's own instance
-        '''
+        '''Return a list of services that use this block.'''
         if not self._instance:
             raise TypeError("Block must be tied to instance")
         name = self.name
