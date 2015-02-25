@@ -119,15 +119,16 @@ class Block(object):
         out.config['name'] = name
         return out
 
-    def in_use(self, instance=None):
+    def in_use(self):
         '''returns a dictionary of services that use this block
 
         If instance is None (default) uses it's own instance
         '''
-        if instance is None:
-            instance = self._instance
-
+        if not self._instance:
+            raise TypeError("Block must be tied to instance")
         name = self.name
-        return {sname: service for (sname, service) in instance.services.items()
-                if service.hasblock(name)}
+        return [service for service in
+                self._instance.services.values()
+                if next((True for b in service.blocks if b.name == name), False)
+                ]
 

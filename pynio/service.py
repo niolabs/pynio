@@ -114,12 +114,13 @@ class Service(object):
             blk.save()
         return blk
 
-    def hasblock(self, block):
-        '''Returns True if the block name is a member of the service'''
-        if isinstance(block, Block):
-            block = block.name
-        return next((True for i in self.config.get('execution', []) if
-                      i['name'] == block), False)
+    @property
+    def blocks(self):
+        if not self._instance:
+            raise TypeError("Can only get block objects when attached to an "
+                            "instance")
+        blocks = self._instance.blocks
+        return [blocks[i['name']] for i in self.config.get('execution', [])]
 
     def _status(self):
         """ Returns the status of the Service. """

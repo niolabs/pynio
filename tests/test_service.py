@@ -62,12 +62,16 @@ class TestService(unittest.TestCase):
         self.assertFalse(instance.droplog.called)
         self.assertDictEqual(c, blk.json())
 
-    def test_hasblock(self):
+    def test_blocks_property(self):
+        instance = mock_instance()
         s = Service('name')
         blk = s.create_block('one', 'type')
-        self.assertTrue(s.hasblock('one'))
-        self.assertTrue(s.hasblock(blk))
-        self.assertFalse(s.hasblock('two'))
+        with self.assertRaises(TypeError):
+            s.blocks
+        instance.add_service(s)
+        instance.add_block(blk)
+        self.assertIn(blk, s.blocks)
+        self.assertNotIn(instance.create_block('two', 'type'), s.blocks)
 
     def test_connect_one_to_two(self):
         s = Service('name', 'type')

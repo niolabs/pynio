@@ -146,4 +146,4 @@ class TestBlock(unittest.TestCase):
         instance.create_service('bar')
         blk = s.create_block('one', 'type')
         use = blk.in_use()
-        self.assertDictEqual(use, {'foo': s})
+        self.assertListEqual(use, [s])
