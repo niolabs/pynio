@@ -85,6 +85,13 @@ class Instance(REST):
         service.save()
         return service
 
+    def save(self):
+        '''Save all blocks and all services in instance'''
+        for b in self.blocks.items():
+            b.save()
+        for s in self.services.items():
+            s.save()
+
     def DELETE_ALL(self):
         '''Deletes all blocks and services from an instance
         regardless of whether or not they can be loaded. Does a reset after
