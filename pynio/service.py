@@ -3,6 +3,7 @@ from .block import Block
 
 
 class Service(object):
+    """ SDK Access to nio Service objects. """
 
     def __init__(self, name, type='Service', config=None, instance=None):
         if not name:
@@ -87,16 +88,15 @@ class Service(object):
         self.command('stop')
 
     def command(self, command, block=None, **request_kwargs):
-        '''send a command to the service or to the block.
-        To the service:
-            service.command('command')
-        To a block in the service:
-            service.command(block, 'command')
+        """ Send a command to the service or to a block in the service.
 
-        kwargs are passed onto the request. Some of use are:
-            data: add data onto the request
-            timeout: set the request timeout
-        '''
+        Args:
+            command (str): The name of the command.
+            block (str, optional):
+            request_kwargs: Keyword arguments are passed to http request.
+                Examples: data, timeout (set the request timeout).
+        """
+
         get = self._instance._get
         if block is None:
             return get('services/{}/{}'.format(self._name, command),

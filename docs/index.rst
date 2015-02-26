@@ -15,17 +15,17 @@ Contents:
 
 
 Instance
-======
+========
 .. automodule:: pynio.instance
    :members:
 
 Service
-======
-.. automodule:: pynio.Service
+=======
+.. automodule:: pynio.service
    :members:
 
 Block
-======
+=====
 .. automodule:: pynio.block
    :members:
 
