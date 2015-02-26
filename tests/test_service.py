@@ -72,8 +72,8 @@ class TestService(unittest.TestCase):
         blk = s.create_block('one', 'type')
         with self.assertRaises(TypeError):
             s.blocks
-        instance.add_service(s)
-        instance.add_block(blk)
+        s = instance.add_service(s)
+        blk = instance.add_block(blk)
         self.assertIn(blk, s.blocks)
         self.assertNotIn(instance.create_block('two', 'type'), s.blocks)
 
