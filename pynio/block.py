@@ -108,17 +108,6 @@ class Block(object):
         self._instance.blocks.pop(self._name)
         self._instance = None  # make sure it isn't used anymore
 
-    def copy(self, name, instance=None):
-        '''return a copy of self, but with a new name and not tied to
-        any instance'''
-        if not name:
-            raise ValueError(name)
-        out = deepcopy(self)
-        out._instance = instance
-        out._name = name
-        out.config['name'] = name
-        return out
-
     def in_use(self):
         '''Return a list of services that use this block.'''
         if not self._instance:

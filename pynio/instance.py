@@ -1,3 +1,4 @@
+from copy import deepcopy
 from pynio.rest import REST
 from pynio.block import Block
 from pynio.service import Service
@@ -103,7 +104,7 @@ class Instance(REST):
         '''Copy block from another instance to self.'''
         if not overwrite and block.name in self.blocks:
             raise ValueError
-        return self.add_block(block.copy(block.name))
+        return self.add_block(deepcopy(block))
 
     def copy_service(self, service, overwrite=False):
         '''Copy service from another instance to self.'''
@@ -121,5 +122,5 @@ class Instance(REST):
                     "Some blocks from service {} already exist: {}".
                     format(service.name, intersect))
         out_blocks = [self.copy_block(b, True) for b in blocks]
-        out_service = self.add_service(service.copy(service.name))
+        out_service = self.add_service(deepcopy(service))
         return out_service, out_blocks
