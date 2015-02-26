@@ -191,7 +191,29 @@ class TestLoadProperties(unittest.TestCase):
 
         c['attributes'].extend(default)
         # make sure that the object updates properly
-        # import ipdb; ipdb.set_trace()
+        blk.update(c)
+        self.assertEqual(blk.__basic__(), c)
+
+        t['properties']['attributes']['default'] = default
+        blk = load_block(t, 'type')
+        blk.name = 'name'
+        self.assertEqual(blk.__basic__(), c)
+
+    def test_load_list_str(self):
+        t = deepcopy(template)
+        t['properties']['attributes'] = {
+            'type': 'list',
+            'template': 'str'
+        }
+        blk = load_block(t, 'type')
+        blk.name = 'name'
+        c = deepcopy(config)
+        c['attributes'] = []
+        self.assertEqual(blk.__basic__(), c)
+        default = ['val1', 'val2']
+
+        c['attributes'].extend(default)
+        # make sure that the object updates properly
         blk.update(c)
         self.assertEqual(blk.__basic__(), c)
 
