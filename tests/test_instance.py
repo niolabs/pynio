@@ -91,17 +91,17 @@ class TestInstance(unittest.TestCase):
         in2 = mock_instance()
 
         b1 = in1.create_block('name', 'type')
-        b2 = in2.copy_block(b1)
+        b2 = in2.add_block(b1)
         self.assertIsNot(b1, b2)
         self.assertIsNot(b1._instance, b2._instance)
         self.assertDictEqual(b1.json(), b2.json())
 
         # cannot overwrite
         with self.assertRaises(ValueError):
-            in1.copy_block(b2)
+            in1.add_block(b2)
 
         # unless specified
-        in1.copy_block(b2, True)
+        in1.add_block(b2, True)
 
     def test_copy_service(self):
         in1 = mock_instance()
@@ -109,7 +109,8 @@ class TestInstance(unittest.TestCase):
 
         s1 = in1.create_service('ser')
         b1 = s1.create_block('b1', 'type')
-        s2, (b2,) = in2.copy_service(s1)
+        s2 = in2.add_service(s1, blocks=True)
+        b2 = s2.blocks[0]
 
         # test block
         self.assertIsNot(b1, b2)
@@ -128,14 +129,15 @@ class TestInstance(unittest.TestCase):
 
         s1 = in1.create_service('ser')
         b1 = s1.create_block('b1', 'type')
-        s2, (b2,) = in2.copy_service(s1)
+        s2 = in2.add_service(s1, blocks=True)
+        b2, = s2.blocks
         s3 = in1.create_service('ser3')
         b3 = s3.create_block('b3', 'type')
         s3.connect(b1, b3)
 
         # cannot copy if any blocks are the same
         with self.assertRaises(ValueError):
-            in2.copy_service(s3)
+            in2.add_service(s3, blocks=True)
 
         # make sure nothing was written
         self.assertNotIn(b3.name, in2.blocks)
@@ -144,7 +146,8 @@ class TestInstance(unittest.TestCase):
         # unless overwritten
         b1.config.value = 42
         self.assertNotEqual(b1.config.value, b2.config.value)
-        s4, (b4, b5) = in2.copy_service(s3, True)
+        s4 = in2.add_service(s3, overwrite=True, blocks=True)
+        b4, b5 = s4.blocks
         self.assertEqual(in2.blocks['b1'].config.value, 42)
 
         # test blocks

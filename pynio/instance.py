@@ -38,15 +38,48 @@ class Instance(REST):
         """
         return self._get('nio')
 
-    def add_block(self, block):
+    def add_block(self, block, overwrite=False):
+        '''Add block to instance.
+
+        Arguments:
+            block -- block object to add
+            overwrite -- if False, ValueError is raised on name collision
+        '''
+        if not overwrite and block.name in self.blocks:
+            raise ValueError
+        block = deepcopy(block)
         block._instance = self
         block.save()
         return block
 
-    def add_service(self, service):
-        service._instance = self
-        service.save()
-        return service
+    def add_service(self, service, overwrite=False, blocks=False):
+        '''Add service to instance
+
+        Arguments:
+            service -- service object to add
+            overwrite -- if False, ValueError is raised on name collision
+            blocks -- will copy over blocks as well. Useful if copying a
+                service from one instance to another
+        '''
+        if not overwrite and service.name in self.services:
+            raise ValueError("Service already exists {}".format(service.name))
+        if not blocks:
+            service = deepcopy(service)
+            service._instance = self
+            service.save()
+            return service
+        blocks = service.blocks
+        if not overwrite:
+            # make sure no blocks have the same name
+            bnames = {b.name for b in blocks}
+            mybnames = set(self.blocks.keys())
+            intersect = bnames.intersection(mybnames)
+            if intersect:
+                raise ValueError(
+                    "Some blocks from service {} already exist: {}".
+                    format(service.name, intersect))
+        [self.add_block(b, True) for b in blocks]
+        return self.add_service(service)
 
     def _get_blocks(self):
         blocks_types = {}
@@ -99,28 +132,3 @@ class Instance(REST):
             self._get('services/{}/stop'.format(s))
             self._delete('services/{}'.format(s))
         self.reset()
-
-    def copy_block(self, block, overwrite=False):
-        '''Copy block from another instance to self.'''
-        if not overwrite and block.name in self.blocks:
-            raise ValueError
-        return self.add_block(deepcopy(block))
-
-    def copy_service(self, service, overwrite=False):
-        '''Copy service from another instance to self.'''
-        blocks = service.blocks
-        if not overwrite:
-            if service.name in self.services:
-                raise ValueError("Service already exists {}".
-                                    format(service.name))
-            # make sure no blocks have the same name
-            bnames = {b.name for b in blocks}
-            mybnames = set(self.blocks.keys())
-            intersect = bnames.intersection(mybnames)
-            if intersect:
-                raise ValueError(
-                    "Some blocks from service {} already exist: {}".
-                    format(service.name, intersect))
-        out_blocks = [self.copy_block(b, True) for b in blocks]
-        out_service = self.add_service(deepcopy(service))
-        return out_service, out_blocks
