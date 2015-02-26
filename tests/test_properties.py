@@ -217,6 +217,7 @@ class TestLoadProperties(unittest.TestCase):
         blk.update(c)
         self.assertEqual(blk.__basic__(), c)
 
+        # import ipdb; ipdb.set_trace()
         t['properties']['attributes']['default'] = default
         blk = load_block(t, 'type')
         blk.name = 'name'
