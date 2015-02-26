@@ -427,13 +427,25 @@ def load_template(template):
 
 def load_list(template):
     '''Specifically used for the "list" type'''
+    tp = dict(template)
     default = template.get('default', [])
     if 'type' not in template:
         # Lists have an interesting feature where they assume you know
-        # their attributes are objects if they don't have a type
-        template['type'] = 'object'
-    template = load_template(template)
-    return TypedList(template, default)
+        # their attributes are objects or the type
+        # specified in their template if they don't have a type
+        try: isin = tp['template'] in {'bool', 'str', 'int', 'float'}
+        except TypeError: isin = False
+        if isin:
+            tp['type'] = tp.pop('template')
+            tp.pop('default')
+            gettype = True
+        else:
+            tp['type'] = 'object'
+            gettype = False
+    t = load_template(tp)
+    if gettype:
+        t = type(t)
+    return TypedList(t, default)
 
 
 # Define all the properties and how to load them when you get their dict
