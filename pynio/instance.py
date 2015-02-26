@@ -91,8 +91,12 @@ class Instance(REST):
         blocks = {}
         for bname, config in self._get('blocks').items():
             btype = config['type']
-            b = blocks_types[btype].copy(bname, instance=self)
-            b.config = config
+            b = deepcopy(blocks_types[btype])
+            b._name = bname
+            b._instance = self
+            b._config.update(config, drop_unknown=True,
+                             drop_logger=self.droplog)
+            b._config['name'] = bname
             blocks[bname] = b
 
         return blocks_types, blocks
