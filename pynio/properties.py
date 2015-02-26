@@ -437,7 +437,6 @@ def load_list(template):
         except TypeError: isin = False
         if isin:
             tp['type'] = tp.pop('template')
-            tp.pop('default', None)
             gettype = True
         else:
             tp['type'] = 'object'
