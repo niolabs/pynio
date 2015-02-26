@@ -79,7 +79,7 @@ class Instance(REST):
                     "Some blocks from service {} already exist: {}".
                     format(service.name, intersect))
         [self.add_block(b, True) for b in blocks]
-        return self.add_service(service)
+        return self.add_service(service, overwrite=overwrite)
 
     def _get_blocks(self):
         blocks_types = {}
@@ -91,8 +91,11 @@ class Instance(REST):
         blocks = {}
         for bname, config in self._get('blocks').items():
             btype = config['type']
-            b = blocks_types[btype].copy(bname, instance=self)
-            b.config = config
+            b = deepcopy(blocks_types[btype])
+            b._name = bname
+            b._instance = self
+            b._config = config
+            b._config['name'] = bname
             blocks[bname] = b
 
         return blocks_types, blocks
@@ -101,7 +104,7 @@ class Instance(REST):
         services = {}
         resp = self._get('services')
         for s in resp:
-            services[s] = Service(resp[s].get('name'),
+            services[s] = Service(resp[s].get('name', s),
                                   config=resp[s],
                                   instance=self)
         return services

@@ -1,7 +1,9 @@
+from copy import deepcopy
 import unittest
 from pynio import Instance, Block, Service
 from unittest.mock import MagicMock, patch
-from .mock import mock_service, mock_instance, config, template
+from .mock import (mock_service, mock_instance, config, template, templates,
+                   service_config, throw)
 
 def assertInstanceEqual(self, in1, in2):
     ser1 = {sname: s.config for (sname, s) in in1.services.items()}
@@ -162,3 +164,31 @@ class TestInstance(unittest.TestCase):
         self.assertIsNot(s3._instance, s4._instance)
         self.assertDictEqual(s3.config, s4.config)
         assertInstanceEqual(self, in1, in2)
+
+    def test_load_blocks(self):
+        ins = mock_instance()
+        configs = {}
+        for n in range(5):
+            name = 'name{}'.format(n)
+            c = deepcopy(config)
+            c['value'] = n * 2
+            c['name'] = name
+            configs[name] = c
+
+        ins._get = lambda v: (templates if v == 'blocks_types' else configs if
+                              v == 'blocks' else throw(ValueError))
+        types, blocks = ins._get_blocks()
+        [self.assertIsInstance(b, Block) for b in blocks.values()]
+        [self.assertIsInstance(b, Block) for b in types.values()]
+        self.assertDictEqual({n: b.json() for n, b in blocks.items()},
+                              configs)
+
+    def test_load_services(self):
+        ins = mock_instance()
+        configs = {service_config['name']: service_config}
+        ins._get = lambda v: (configs if v == 'services' else
+                              throw(ValueError))
+        services = ins._get_services()
+        result = {n: s.config for (n, s) in services.items()}
+        self.assertDictEqual(configs, result)
+        [self.assertIsInstance(s, Service) for s in services.values()]
