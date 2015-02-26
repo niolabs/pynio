@@ -243,13 +243,15 @@ class TypedList(list):
         convert: whether to attempt automatic conversion to type
         noset: don't allow setting of existing elements
     '''
-    def __init__(self, type, *args, convert=True, noset=False, **kwargs):
+    def __init__(self, type, *args, convert=True, noset=False,
+                 drop_unknown=False, drop_logger=None, **kwargs):
         self._type = type
         self._convert = convert
         self._noset = noset
         list.__init__(self)  # make self an empty list
         convert = self._convert
-        self.extend(tuple(*args, **kwargs))
+        self.extend(tuple(*args, **kwargs), drop_unknown=drop_unknown,
+                    drop_logger=drop_logger)
 
     def __basic__(self):
         '''returns self in only basic python types.'''
@@ -263,9 +265,9 @@ class TypedList(list):
         return out
 
     def update(self, value, **kwargs):
-        new = TypedList(self._type, value)  # check types
+        new = TypedList(self._type, value, **kwargs)  # check types
         self.clear()
-        self.extend(new)
+        self.extend(new, **kwargs)
 
     def _convert_value(self, value, **kwargs):
         '''Automatic type conversion. Uses update if it exists'''
