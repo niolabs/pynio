@@ -1,4 +1,5 @@
 from copy import deepcopy
+import pprint
 
 from .properties import load_block
 
@@ -117,3 +118,8 @@ class Block(object):
                 self._instance.services.values()
                 if next((True for b in service.blocks if b.name == name), False)
                 ]
+
+    def __str__(self):
+        config = '\n  '.join(pprint.pformat(self.config).split('\n'))
+        return ("Block({}, {}).config:{{\n  ".format(self.name, self.type) +
+                                        config + '\n}\n')
