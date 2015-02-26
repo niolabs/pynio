@@ -326,6 +326,7 @@ class TypedEnum:
         self._enum = enum
         self._enum_by_value = {e.value: e for e in enum}
         self._enum_by_name = {e.name: e for e in enum}
+        self._enum_dict = {e.name: e.value for e in enum}
         self._value = next(iter(enum))
         if default is not None:
             self.value = default
@@ -351,7 +352,8 @@ class TypedEnum:
         return self._value.name
 
     def __repr__(self):
-        return repr(self._value.name)
+        return "Enum(value={}, possible={})".format(self._value.name,
+                                                    self._enum_dict)
 
     def __get__(self, obj, type=None):
         return self._value.name
