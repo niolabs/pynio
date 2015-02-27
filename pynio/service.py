@@ -3,6 +3,7 @@ from .block import Block
 
 
 class Service(object):
+    """ SDK Access to nio Service objects. """
 
     def __init__(self, name, type='Service', config=None, instance=None):
         if not name:
@@ -53,7 +54,12 @@ class Service(object):
         # if block exists, add the receiever, otherwise init connection
         receivers = [] if blk2 is None else [blk2.name]
         if connection:
-            connection['receivers'].extend(receivers)
+            cr = connection['receivers']
+            cr.extend(receivers)
+            # remove duplicates but preserve order
+            seen = set()
+            seen_add = seen.add
+            cr[:] = [x for x in cr if not(x in seen or seen_add(x))]
         else:
             connection = {'name': blk1.name, 'receivers': receivers}
             execution.append(connection)
@@ -87,16 +93,15 @@ class Service(object):
         self.command('stop')
 
     def command(self, command, block=None, **request_kwargs):
-        '''send a command to the service or to the block.
-        To the service:
-            service.command('command')
-        To a block in the service:
-            service.command(block, 'command')
+        """ Send a command to the service or to a block in the service.
 
-        kwargs are passed onto the request. Some of use are:
-            data: add data onto the request
-            timeout: set the request timeout
-        '''
+        Args:
+            command (str): The name of the command.
+            block (str, optional):
+            request_kwargs: Keyword arguments are passed to http request.
+                Examples: data, timeout (set the request timeout).
+        """
+
         get = self._instance._get
         if block is None:
             return get('services/{}/{}'.format(self._name, command),
@@ -155,3 +160,15 @@ class Service(object):
     @property
     def pid(self):
         return self._status()['pid']
+
+    def __str__(self):
+        # get connections, ones with most connections first
+        execution = sorted(self.config.get('execution', []),
+                           key=lambda i: len(i['receivers']),
+                           reverse=True)
+        name_fmat = '{} --> {}'.format
+        outstr = []
+        outstr = [name_fmat(i['name'], ', '.join(i['receivers'])) for i in
+                   execution]
+        return ('Service({}).connections:{{\n  '.format(self.name) +
+                '\n  '.join(outstr) + '\n}\n')

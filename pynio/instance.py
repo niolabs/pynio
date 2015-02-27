@@ -92,7 +92,8 @@ class Instance(REST):
             b = deepcopy(blocks_types[btype])
             b._name = bname
             b._instance = self
-            b._config = config
+            b._config.update(config, drop_unknown=True,
+                             drop_logger=self.droplog)
             b._config['name'] = bname
             blocks[bname] = b
 

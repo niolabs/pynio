@@ -32,7 +32,7 @@ class AttrDict(dict):
             if type(value) == dict:
                 dict.__setitem__(self, key, self.__class__(value))
 
-    def update(self, value):
+    def update(self, value, drop_unknown=False, drop_logger=None):
         '''Update self from a value dictionary.
 
         If values have their own `update` methods defined, values
@@ -41,9 +41,22 @@ class AttrDict(dict):
         '''
         if isinstance(value, dict):
             value = value.items()
+        if drop_unknown:
+            newv = {}
+            for key, value in value:
+                if key in self:
+                    newv[key] = value
+                else:
+                    if drop_logger is not None:
+                        drop_logger(key)
+            value = newv.items()
         for key, value in value:
             if hasattr(self[key], 'update'):
-                self[key].update(value)
+                try:
+                    self[key].update(value, drop_unknown=drop_unknown,
+                                            drop_logger=drop_logger)
+                except TypeError:
+                    self[key].update(value)
             else:
                 self[key] = value
 
@@ -193,27 +206,6 @@ class TypedDict(AttrDict):
         object.__setattr__(self, '_convert', convert)
         super().__init__(*args, **kwargs)
 
-    def update(self, value, drop_unknown=False, drop_logger=None):
-        '''Update the dictionary from a value
-
-        Arguments:
-            drop_unknown -- drop keys that are not in the dictionary
-                otherwise an error will be raised
-            drop_logger -- this will be called on each drop with the
-                key passed in. When drop_unknown evaluates to false it
-                does nothing
-        '''
-        if drop_unknown:
-            newv = {}
-            for key, value in value.items():
-                if key in self:
-                    newv[key] = value
-                else:
-                    if drop_logger is not None:
-                        drop_logger(key)
-            value = newv
-        return AttrDict.update(self, value)
-
     def _convert_value(self, value, curval):
         '''Convert value to type(curvalue). Also do associated error checking'''
         curtype = type(curval)
@@ -251,13 +243,15 @@ class TypedList(list):
         convert: whether to attempt automatic conversion to type
         noset: don't allow setting of existing elements
     '''
-    def __init__(self, type, *args, convert=True, noset=False, **kwargs):
+    def __init__(self, type, *args, convert=True, noset=False,
+                 drop_unknown=False, drop_logger=None, **kwargs):
         self._type = type
         self._convert = convert
         self._noset = noset
         list.__init__(self)  # make self an empty list
         convert = self._convert
-        self.extend(tuple(*args, **kwargs))
+        self.extend(tuple(*args, **kwargs), drop_unknown=drop_unknown,
+                    drop_logger=drop_logger)
 
     def __basic__(self):
         '''returns self in only basic python types.'''
@@ -270,32 +264,35 @@ class TypedList(list):
             out.append(value)
         return out
 
-    def update(self, value):
-        new = TypedList(self._type, value)  # check types
+    def update(self, value, **kwargs):
+        new = TypedList(self._type, value, **kwargs)  # check types
         self.clear()
-        self.extend(new)
+        self.extend(new, **kwargs)
 
-    def _convert_value(self, value):
+    def _convert_value(self, value, **kwargs):
         '''Automatic type conversion. Uses update if it exists'''
         if hasattr(self._type, 'update'):
             # Copy our type (think of it is a template)
             _type = deepcopy(self._type)
             # update the values. Values not included will remain as the default
-            _type.update(value)
+            try:
+                _type.update(value, **kwargs)
+            except TypeError:
+                _type.update(value)
             value = _type
         elif not isinstance(value, type):
             return self._type(value)
         return value
 
-    def append(self, value):
+    def append(self, value, **kwargs):
         '''Append a value. It is type checked first'''
-        value = self._convert_value(value)
+        value = self._convert_value(value, **kwargs)
         list.append(self, value)
 
-    def extend(self, iterator):
+    def extend(self, iterator, **kwargs):
         '''Extend self from an iterator, type checking every value'''
         for i in iterator:
-            self.append(i)
+            self.append(i, **kwargs)
 
     def __setitem__(self, item, value):
         if self._noset:
@@ -427,13 +424,25 @@ def load_template(template):
 
 def load_list(template):
     '''Specifically used for the "list" type'''
+    tp = dict(template)
     default = template.get('default', [])
+    isbase = False
     if 'type' not in template:
         # Lists have an interesting feature where they assume you know
-        # their attributes are objects if they don't have a type
-        template['type'] = 'object'
-    template = load_template(template)
-    return TypedList(template, default)
+        # their attributes are objects or the type
+        # specified in their template if they don't have a type
+        try: isbase = tp['template'] in {'bool', 'str', 'int', 'float'}
+        except TypeError: isbase = False
+        if isbase:
+            tp['type'] = tp.pop('template')
+            # The default won't make sense since it is a list of values
+            tp.pop('default', None)
+        else:
+            tp['type'] = 'object'
+    t = load_template(tp)
+    if isbase:
+        t = type(t)
+    return TypedList(t, default)
 
 
 # Define all the properties and how to load them when you get their dict

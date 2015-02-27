@@ -40,6 +40,18 @@ class TestService(unittest.TestCase):
             [{'receivers': [], 'name': 'one'}]
         )
 
+    def test_connect_twice(self):
+        s = Service('name', 'type')
+        tb = TestBlock('one')
+        tb2 = TestBlock('two')
+        s.connect(tb, tb2)
+        s.connect(tb, tb2)
+        self.assertEqual(
+            s.config['execution'],
+            [{'name': 'two', 'receivers': []},
+             {'name': 'one', 'receivers': ['two']}]
+        )
+
     def test_create_block(self):
         s = Service('name', 'type')
         blk = s.create_block('one', 'blk')
@@ -155,3 +167,15 @@ class TestService(unittest.TestCase):
         self.assertListEqual(execution, [
             {'name': 'two', 'receivers': []}
         ])
+
+    def test_str(self):
+        ins = mock_instance()
+        s = ins.create_service('name')
+        b1 = s.create_block('b1', 'type')
+        b2 = s.create_block('b2', 'type')
+        b3 = s.create_block('b3', 'type')
+        s.create_block('b4', 'type')
+        s.connect(b1, b2)
+        s.connect(b1, b3)
+        s.connect(b2, b3)
+        str(s)  # verify no error is raised
