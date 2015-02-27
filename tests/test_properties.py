@@ -2,6 +2,7 @@ from enum import Enum
 from copy import copy, deepcopy
 
 import unittest
+from unittest.mock import MagicMock
 
 from .example_data import (SimulatorFastTemplate, SimulatorFastConfig,
                            SimulatorTemplate, SimulatorConfig)
@@ -253,3 +254,24 @@ class TestLoadProperties(unittest.TestCase):
         self.assertRaises(TypeError, setattr, blk.interval.days, 'bad')
         blk.log_level = 'DEBUG'
         self.assertRaises(ValueError, setattr, blk, 'log_level', 'bad')
+
+    def test_drop_unknown(self):
+        t = deepcopy(template)
+        t['properties']['attributes'] = {
+            'type': 'list',
+            'template': {
+                'name': {
+                    'type': 'str',
+                    'default': 'attrname'
+                },
+                'value': {
+                    'type': 'float',
+                    'default': 42.2
+                }
+            }
+        }
+        blk = load_block(t)
+        c = deepcopy(config)
+        c['attributes'] = [{'name': 'name', 'bad': 'foo', 'bad2': 'foo'}]
+        droplog = MagicMock()
+        blk.update(c, drop_unknown=True, drop_logger=droplog)
