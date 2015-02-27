@@ -1,6 +1,10 @@
 from unittest.mock import MagicMock
 from pynio import properties, Block, Instance
 
+
+def throw(error):
+    raise error
+
 template = {
     'name': 'template',
     'properties': {
@@ -20,12 +24,24 @@ template = {
     }
 }
 
+templates = {'type': template}
+
 config = {
     'name': 'name',
     'type': 'type',
     'value': 0
 }
 
+service_config = {
+    "mappings": [],
+    "execution": [],
+    "sys_metadata": "",
+    "type": "Service",
+    "status": "started",
+    "log_level": "ERROR",
+    "auto_start": True,
+    "name": "name"
+}
 
 class _Instance(Instance):
     def __init__(self):

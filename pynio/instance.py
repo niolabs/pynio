@@ -63,23 +63,21 @@ class Instance(REST):
         '''
         if not overwrite and service.name in self.services:
             raise ValueError("Service already exists {}".format(service.name))
-        if not blocks:
-            service = deepcopy(service)
-            service._instance = self
-            service.save()
-            return service
-        blocks = service.blocks
-        if not overwrite:
-            # make sure no blocks have the same name
-            bnames = {b.name for b in blocks}
-            mybnames = set(self.blocks.keys())
-            intersect = bnames.intersection(mybnames)
-            if intersect:
-                raise ValueError(
-                    "Some blocks from service {} already exist: {}".
-                    format(service.name, intersect))
-        [self.add_block(b, True) for b in blocks]
-        return self.add_service(service)
+        if blocks:
+            if not overwrite:
+                # make sure no blocks have the same name
+                bnames = {b.name for b in service.blocks}
+                mybnames = set(self.blocks.keys())
+                intersect = bnames.intersection(mybnames)
+                if intersect:
+                    raise ValueError(
+                        "Some blocks from service {} already exist: {}".
+                        format(service.name, intersect))
+            [self.add_block(b, True) for b in service.blocks]
+        service = deepcopy(service)
+        service._instance = self
+        service.save()
+        return service
 
     def _get_blocks(self):
         blocks_types = {}
@@ -105,7 +103,7 @@ class Instance(REST):
         services = {}
         resp = self._get('services')
         for s in resp:
-            services[s] = Service(resp[s].get('name'),
+            services[s] = Service(resp[s].get('name', s),
                                   config=resp[s],
                                   instance=self)
         return services
