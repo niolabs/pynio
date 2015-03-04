@@ -5,10 +5,24 @@ from .properties import load_block
 
 
 class Block(object):
-    '''SDK Access to nio Block objects.
+    """n.io Service
+
     Blocks are units inside of services. They perform functions on incomming
     signals and put the signals out.
-    '''
+
+    Args:
+        name (str): Name of new block.
+        type (str, optional): BlockType of new block.
+        config (dict, optional): Optional configuration of block.
+        instance (Instance, optional): Optional instance to add the block to.
+
+    Attributes:
+        name (str): Name of service.
+        type (str): ServiceType of service.
+        config (dict): Configuration of service.
+        status (str): Status of service.
+
+    """
 
     def __init__(self, name, type, config=None, instance=None):
         if not name:
@@ -30,6 +44,10 @@ class Block(object):
 
         Will create a new block if one does not exist by this name.
         Otherwise it will update the existing block config.
+
+        Raises:
+            Exception: If service is not associated with an instance.
+
         """
 
         if not self._instance:
@@ -88,7 +106,13 @@ class Block(object):
             return self._config
 
     def _load_template(self, type, value, instance=None):
-        '''Set the template with a template gotten from nio'''
+        """Set the template with a template gotten from nio.
+
+        Raises:
+            TypeError: If block is not associated with an instance.
+
+        """
+
         if instance is not None:
             self._instance = instance
         if self._instance is None:
@@ -102,7 +126,7 @@ class Block(object):
         self.config = self._config  # reload own config with new template
 
     def delete(self):
-        '''Delete self from instance and services'''
+        """Delete the block from the instance"""
         self._instance._delete('blocks/{}'.format(self._name))
         for s in self._instance.services.values():
             s.remove_block(self)
@@ -110,7 +134,12 @@ class Block(object):
         self._instance = None  # make sure it isn't used anymore
 
     def in_use(self):
-        '''Return a list of services that use this block.'''
+        """Return a list of services that use this block.
+
+        Raises:
+            TypeError: If block is not associated with an instance.
+
+        """
         if not self._instance:
             raise TypeError("Block must be tied to instance")
         name = self.name

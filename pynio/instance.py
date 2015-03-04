@@ -17,6 +17,13 @@ class Instance(REST):
         port (int, optional): Port of runing n.io instance. Default is 8181.
         creds ((str, str), optional): Username and password for basic
             authentication. Default is ('Admin', 'Admin').
+
+    Attributes:
+        blocks (dict of Block): A collection of block names with their Block
+            instance.
+        services (dict of Service): A collection of service names with their
+            Service instance.
+
     """
 
     def __init__(self, host='127.0.0.1', port=8181, creds=None):
@@ -33,18 +40,22 @@ class Instance(REST):
         self.services = self._get_services()
 
     def nio(self):
-        """ Returns nio version info.
-
-        """
+        """ Returns nio version info."""
         return self._get('nio')
 
     def add_block(self, block, overwrite=False):
-        '''Add block to instance.
+        """Add block to instance.
 
-        Arguments:
-            block -- block object to add
-            overwrite -- if False, ValueError is raised on name collision
-        '''
+        Args:
+            block (Block): Block instanace to add.
+            overwrite (bool, optional): If True, configuration will be updated
+                if `block` is already in Instance. Default is False.
+
+        Raises:
+            ValueError: If `overwrite` is False and `block` is already in the
+                instance.
+
+        """
         if not overwrite and block.name in self.blocks:
             raise ValueError
         block = deepcopy(block)
@@ -53,14 +64,18 @@ class Instance(REST):
         return block
 
     def add_service(self, service, overwrite=False, blocks=False):
-        '''Add service to instance
+        """Add service to instance.
 
-        Arguments:
-            service -- service object to add
-            overwrite -- if False, ValueError is raised on name collision
-            blocks -- will copy over blocks as well. Useful if copying a
-                service from one instance to another
-        '''
+        Args:
+            service (Service): Service instanace to add.
+            overwrite (bool, optional): If True, configuration will be updated
+                if `service` is already in Instance. Default is False.
+
+        Raises:
+            ValueError: If `overwrite` is False and `block` is already in the
+                instance.
+
+        """
         if not overwrite and service.name in self.services:
             raise ValueError("Service already exists {}".format(service.name))
         if blocks:
@@ -109,13 +124,27 @@ class Instance(REST):
         return services
 
     def create_block(self, name, type, config=None):
-        '''Convenience function to create a block and add it to instance'''
+        """Create a block in the instance.
+
+        Args:
+            name (str): Name of new block.
+            type (str): BlockType of new block.
+            config (dict, optional): Optional configuration of block properties.
+
+        """
         block = Block(name, type, config, instance=self)
         block.save()
         return block
 
     def create_service(self, name, type=None, config=None):
-        '''Convenience function to create a service and add it to instance'''
+        """Create a service in the instance.
+
+        Args:
+            name (str): Name of new service.
+            type (str, optional): ServiceType of new service.
+            config (dict, optional): Optional configuration of service.
+
+        """
         if type is None:
             service = Service(name, config=config, instance=self)
         else:
@@ -124,16 +153,14 @@ class Instance(REST):
         return service
 
     def save(self):
-        '''Save all blocks and all services in instance'''
+        """Save all blocks and all services in instance."""
         for b in self.blocks.items():
             b.save()
         for s in self.services.items():
             s.save()
 
     def DELETE_ALL(self):
-        '''Deletes all blocks and services from an instance
-        regardless of whether or not they can be loaded. Does a reset after
-        '''
+        """Deletes all blocks and services from an instance."""
         blocks, services = self._get('blocks'), self._get('services')
         for b in blocks:
             self._delete('blocks/{}'.format(b))
