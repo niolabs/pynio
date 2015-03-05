@@ -3,7 +3,21 @@ from .block import Block
 
 
 class Service(object):
-    """ SDK Access to nio Service objects. """
+    """n.io Service
+
+    Args:
+        name (str): Name of new service.
+        type (str, optional): ServiceType of new service.
+        config (dict, optional): Optional configuration of service.
+        instance (Instance, optional): Optional instance to add the service to.
+
+    Attributes:
+        name (str): Name of service.
+        type (str): ServiceType of service.
+        config (dict): Configuration of service.
+        status (str): Status of service.
+
+    """
 
     def __init__(self, name, type='Service', config=None, instance=None):
         if not name:
@@ -14,10 +28,14 @@ class Service(object):
         self._instance = instance
 
     def save(self):
-        """ PUTs the service config to nio.
+        """PUTs the service config to nio.
 
         Will create a new service if one does not exist by this name.
         Otherwise it will update the existing service config.
+
+        Raises:
+            Exception: If service is not associated with an instance.
+
         """
 
         if not self._instance:
@@ -32,8 +50,14 @@ class Service(object):
         self._instance._put(endpoint, config)
 
     def connect(self, blk1, blk2=None):
-        '''Connect two blocks. Can also be used to add a block without
-        connecting it'''
+        """Connect two blocks.
+
+        Args:
+            blk1 (Block): Sends signals to `blk2`. If `blk2` is not specified
+                then `blk1` is added to the service with no receivers.
+            blk2 (Block, optional): Receives signal form `blk1`.
+
+        """
         # initialize execution to an empty list if it doesn't already exist
         execution = self.config.get('execution', [])
         self.config['execution'] = execution
@@ -65,7 +89,12 @@ class Service(object):
             execution.append(connection)
 
     def remove_block(self, block):
-        '''remove a block from service. Does NOT delete the block'''
+        """Remove a block from service. Does NOT delete the block.
+
+        Args:
+            block (Block): Block to remove from service.
+
+        """
         execution = self.config.get('execution', None)
         if execution is None:  # no blocks
             return
@@ -85,21 +114,22 @@ class Service(object):
         execution[:] = [c for c in execution if clean(c)]
 
     def start(self):
-        """ Starts the nio Service. """
+        """Starts the nio Service."""
         self.command('start')
 
     def stop(self):
-        """ Stops the nio Service. """
+        """Stops the nio Service."""
         self.command('stop')
 
     def command(self, command, block=None, **request_kwargs):
-        """ Send a command to the service or to a block in the service.
+        """Send a command to the service or to a block in the service.
 
         Args:
             command (str): The name of the command.
-            block (str, optional):
+            block (str, optional): The name of the block if commanding a block.
             request_kwargs: Keyword arguments are passed to http request.
                 Examples: data, timeout (set the request timeout).
+
         """
 
         get = self._instance._get
@@ -112,6 +142,15 @@ class Service(object):
                        **request_kwargs)
 
     def create_block(self, name, type, config=None):
+        """Create a new block and add it to the service.
+
+        Args:
+            name (str): Name of new block.
+            type (str, optional): BlockType of new block.
+            config (dict, optional): Optional configuration of block.
+
+        """
+
         blk = Block(name, type, config=config, instance=self._instance)
         self.connect(blk)
         if self._instance:
@@ -121,7 +160,7 @@ class Service(object):
 
     @property
     def blocks(self):
-        '''Return a list of blocks used by this service'''
+        """Return a list of blocks used by this service."""
         if not self._instance:
             raise TypeError("Can only get block objects when attached to an "
                             "instance")
@@ -129,7 +168,7 @@ class Service(object):
         return [blocks[i['name']] for i in self.config.get('execution', [])]
 
     def _status(self):
-        """ Returns the status of the Service. """
+        """Returns the status of the Service."""
         return self._instance._get(
             'services/{}/status'.format(self._name))
 
@@ -151,7 +190,7 @@ class Service(object):
         return self._status()['status']
 
     def delete(self):
-        '''Delete self from instance'''
+        """Delete the service from the instance"""
         self._instance._delete(
             'services/{}'.format(self._name))
         self._instance.services.pop(self._name)
