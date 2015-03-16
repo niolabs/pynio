@@ -18,7 +18,7 @@ class REST(object):
         self._url = 'http://{}:{}/{}'.format(host, port, '{}')
 
     def _get(self, endpoint, timeout=None, data=None, retry=0,
-             raw_response=False):
+             raw_response=False, **kwargs):
         '''Performs a get with some amounts of retrys
 
         Keyword Arguments:
@@ -33,7 +33,8 @@ class REST(object):
                 r = requests.get(self._url.format(endpoint),
                                  auth=self._creds,
                                  timeout=timeout,
-                                 data=data)
+                                 data=data,
+                                 **kwargs)
                 r.raise_for_status()
                 break
             except requests.exceptions.ConnectionError as e:
