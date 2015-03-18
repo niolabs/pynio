@@ -37,8 +37,14 @@ class REST(object):
                                  **kwargs)
                 r.raise_for_status()
                 break
-            except requests.exceptions.ConnectionError as e:
-                log.warning("Failure connecting in _get")
+            except (requests.exceptions.ConnectionError,
+                    requests.exceptions.Timeout,
+                    requests.exceptions.HTTPError) as e:
+                if isinstance(e, requests.exceptions.HTTPError):
+                    if r.reason != 'Request Timeout':
+                        raise
+                log.warning("Failure connecting in _get {}: {}".format(
+                    type(e), e))
                 E = e
                 if i < retry:
                     time.sleep(1)

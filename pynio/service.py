@@ -113,13 +113,13 @@ class Service(object):
 
         execution[:] = [c for c in execution if clean(c)]
 
-    def start(self):
+    def start(self, retry=0):
         """Starts the nio Service."""
-        self.command('start')
+        self.command('start', retry=retry)
 
-    def stop(self):
+    def stop(self, retry=0):
         """Stops the nio Service."""
-        self.command('stop')
+        self.command('stop', retry=retry)
 
     def command(self, command, block=None, **request_kwargs):
         """Send a command to the service or to a block in the service.
