@@ -454,6 +454,8 @@ PROPERTIES = {
     NioObject.TYPE: lambda p: load_properties(p['template'], NioObject),
     'bool': bool,
     'str': str,
+    'expression': str,
+    'version': str,
     'int': int,
     'float': float
 }
