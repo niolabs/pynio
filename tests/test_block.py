@@ -8,8 +8,22 @@ class TestBlock(unittest.TestCase):
 
     def test_block(self):
         b = Block('name', 'type')
+        b._instance = MagicMock()
         self.assertEqual(b.name, 'name')
         self.assertEqual(b.type, 'type')
+        self.assertDictEqual(b.config, {'name': 'name', 'type': 'type'})
+        self.assertTrue(isinstance(b.config, dict))
+
+    def test_block_config_attr(self):
+        b = Block('name', 'type')
+        b._instance = MagicMock()
+        self.assertEqual(b.config.name, 'name')
+        self.assertEqual(b.config.type, 'type')
+        # test config access as attributes
+        b.config.attr = 'attr'
+        self.assertDictEqual(b.config,
+                             {'name': 'name', 'type': 'type', 'attr': 'attr'})
+        self.assertTrue(isinstance(b.config, dict))
 
     def test_noname(self):
         with self.assertRaises(ValueError):

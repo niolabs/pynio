@@ -2,6 +2,12 @@ from copy import deepcopy
 import pprint
 
 
+class AttrDict(dict):
+    def __init__(self, *args, **kwargs):
+        super(AttrDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
+
 class Block(object):
     """n.io Service
 
@@ -18,6 +24,7 @@ class Block(object):
         name (str): Name of service.
         type (str): ServiceType of service.
         config (dict): Configuration of service.
+        type_info (dict): Block type information.
 
     """
 
@@ -35,7 +42,8 @@ class Block(object):
                     type, config['type']))
         else:
             config['type'] = type
-        self._config = deepcopy(config) or {}
+        self.config = deepcopy(config) or {}
+        self._type_info = {}
 
     def save(self):
         """ PUTs the block config to nio.
@@ -66,6 +74,12 @@ class Block(object):
         return self._name
 
     @property
+    def type_info(self):
+        self._type_info = \
+            self._instance._get('blocks_types/{}'.format(self.type))
+        return self._type_info
+
+    @property
     def type(self):
         return self._type
 
@@ -76,7 +90,7 @@ class Block(object):
     @config.setter
     def config(self, value):
         if isinstance(value, dict):
-            self._config = deepcopy(value)
+            self._config = AttrDict(deepcopy(value))
         else:
             raise ValueError('config needs to be a dictionary')
 
