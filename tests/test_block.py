@@ -1,9 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
-from copy import deepcopy
-
 from pynio import Block
-from .mock import mock_instance, config, template
+from .mock import mock_instance, config
 
 
 class TestBlock(unittest.TestCase):
@@ -38,80 +36,6 @@ class TestBlock(unittest.TestCase):
         self.assertTrue('Block is not associated with an instance' in
                         context.exception.args[0])
         self.assertFalse(b._put.called)
-
-    def test_load_template(self):
-        from .example_data import SimulatorFastTemplate
-        instance = lambda: None
-        instance.droplog = print
-        btype = 'SimulatorFast'
-        b = Block('sim', btype)
-        b._load_template(btype, SimulatorFastTemplate, instance)
-        from pprint import pprint
-        print()
-        pprint(b.template)
-        self.assertRaises(TypeError, setattr, b.template, 'type', 'foo')
-
-    def test_typed_config(self):
-        from .example_data import SimulatorFastTemplate, SimulatorFastConfig
-        instance = lambda: None
-        instance.droplog = print
-        btype = 'SimulatorFast'
-        b = Block('sim', btype, config=SimulatorFastConfig)
-        b._load_template(btype, SimulatorFastTemplate, instance)
-        b.config.interval.days = 10
-        self.assertEqual(b.config.interval.days, 10)
-        self.assertRaises(ValueError, setattr,
-                            b.config.interval, 'days', 'bad')
-
-    def test_load_config(self):
-        instance = mock_instance()
-        b = Block('name', 'type', config, instance=instance)
-        b.save()
-        self.assertDictEqual(b.json(), config)
-        self.assertTrue(instance._put.called)
-
-    def test_config_drop(self):
-        '''Ensure it drops non-existant settings'''
-        c = deepcopy(config)
-        c['notthere'] = 4
-        instance = mock_instance()
-        b = Block('name', 'type', c, instance=instance)
-        b.save()
-        self.assertDictEqual(b.json(), config)
-        self.assertTrue(instance._put.called)
-
-    def test_load_all_templates(self):
-        from .example_data import BlocksTemplatesAll
-        instance = lambda: None
-        instance.droplog = MagicMock()
-        for btype, template in BlocksTemplatesAll.items():
-            b = Block(btype, btype)
-            b._load_template(btype, template, instance)
-
-
-    def test_load_all_configs(self):
-        from .example_data import BlocksTemplatesAll, BlocksConfigsAll
-        instance = lambda: None
-        instance.droplog = MagicMock()
-
-        blocks_types = {}
-        for btype, template in BlocksTemplatesAll.items():
-            b = Block(btype, btype)
-            b._load_template(btype, template, instance)
-            blocks_types[btype] = b
-            str(b)  # verify no error is raised
-
-        blocks = {}
-        for bname, config in BlocksConfigsAll.items():
-            # import ipdb; ipdb.set_trace()
-            btype = config['type']
-            b = deepcopy(blocks_types[btype])
-            b.config = config
-            blocks[bname] = b
-            str(b)  # verify no error is raised
-
-        droplog = instance.droplog
-        self.assertEqual(droplog.call_count, 2)
 
     def test_delete_block(self):
         instance = mock_instance()

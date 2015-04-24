@@ -1,5 +1,5 @@
 from unittest.mock import MagicMock
-from pynio import properties, Block, Instance
+from pynio import Block, Instance
 
 
 def throw(error):
@@ -60,7 +60,6 @@ def mock_instance(type=template):
     instance.blocks = {}
     instance.services = {}
     b = Block('type', 'type', instance=instance)
-    b._load_template('type', template)
     instance.blocks_types = {
         'type': b
     }

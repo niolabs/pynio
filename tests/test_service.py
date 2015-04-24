@@ -67,13 +67,13 @@ class TestService(unittest.TestCase):
         c = deepcopy(config)
         c['name'] = 'one'
         s = Service('name', instance=instance)
-        blk = s.create_block('one', 'type')
+        blk = s.create_block('one', 'type', c)
         self.assertEqual(
             s.config['execution'],
             [{'receivers': [], 'name': 'one'}]
         )
         self.assertFalse(instance.droplog.called)
-        self.assertDictEqual(c, blk.json())
+        self.assertDictEqual(c, blk.config)
         self.assertIsInstance(blk, Block)
         self.assertIn(blk.name, instance.blocks)
         self.assertIn(blk, instance.blocks.values())

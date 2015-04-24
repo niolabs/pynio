@@ -1,8 +1,6 @@
 from copy import deepcopy
 import pprint
 
-from .properties import load_block
-
 
 class Block(object):
     """n.io Service
@@ -20,24 +18,24 @@ class Block(object):
         name (str): Name of service.
         type (str): ServiceType of service.
         config (dict): Configuration of service.
-        status (str): Status of service.
 
     """
 
     def __init__(self, name, type, config=None, instance=None):
+        config = config or {}
         if not name:
             raise ValueError("Name cannot be blank")
         self._name = name
         self._type = type
-        self._template = None
-        self._config = deepcopy(config) or {}
         self._instance = instance
-        self._config['name'] = name
-        if 'type' in self._config:
+        config['name'] = name
+        if 'type' in config:
             if type != config['type']:
                 raise ValueError("Types do not match: {} != {}".format(
                     type, config['type']))
-        self._config['type'] = type
+        else:
+            config['type'] = type
+        self._config = deepcopy(config) or {}
 
     def save(self):
         """ PUTs the block config to nio.
@@ -54,14 +52,10 @@ class Block(object):
             raise Exception('Block is not associated with an instance')
 
         # setup config
-        config = self.config
-        config['name'] = self._name
-        config['type'] = self._type
-        # load template and then reload config
-        self.template = self._instance.blocks_types[self._type].template
-        self.config = config
+        self.config['name'] = self._name
+        self.config['type'] = self._type
         # put onto the web
-        self._put('blocks/{}'.format(self._name), self.json())
+        self._put('blocks/{}'.format(self._name), self.config)
         self._instance.blocks[self._name] = self
 
     def _put(self, endpoint, config):
@@ -76,54 +70,15 @@ class Block(object):
         return self._type
 
     @property
-    def template(self):
-        return self._template
-
-    @template.setter
-    def template(self, value):
-        # do type checking later
-        self._template = value
-
-    @property
     def config(self):
         return self._config
 
     @config.setter
     def config(self, value):
-        if self._template is None:
-            self._config = value
-            return
-        config = deepcopy(self._template)
-        config.readonly = False
-        config.update(value, drop_unknown=True,
-                      drop_logger=self._instance.droplog)
-        self._config = config
-
-    def json(self):
-        if hasattr(self._config, '__basic__'):
-            return self._config.__basic__()
+        if isinstance(value, dict):
+            self._config = deepcopy(value)
         else:
-            return self._config
-
-    def _load_template(self, type, value, instance=None):
-        """Set the template with a template gotten from nio.
-
-        Raises:
-            TypeError: If block is not associated with an instance.
-
-        """
-
-        if instance is not None:
-            self._instance = instance
-        if self._instance is None:
-            raise TypeError("Block is not tied to an instance")
-
-        template = load_block(value)
-        template.type = type
-        template.name = ''
-        template.readonly = True
-        self._template = template
-        self.config = self._config  # reload own config with new template
+            raise ValueError('config needs to be a dictionary')
 
     def delete(self):
         """Delete the block from the instance"""

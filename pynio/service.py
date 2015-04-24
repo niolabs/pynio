@@ -16,6 +16,8 @@ class Service(object):
         type (str): ServiceType of service.
         config (dict): Configuration of service.
         status (str): Status of service.
+        blocks (list of Block): Blocks that are in the service.
+        pid (str): Process ID of running service.
 
     """
 

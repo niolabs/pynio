@@ -5,6 +5,7 @@ from pynio.service import Service
 
 
 class Instance(REST):
+
     """ Interface for a running n.io instance.
 
     This is the main part of pynio. All communication with the n.io instance
@@ -36,7 +37,8 @@ class Instance(REST):
         self.reset()
 
     def reset(self):
-        self.blocks_types, self.blocks = self._get_blocks()
+        self.blocks_types = self._get_blocks_types()
+        self.blocks = self._get_blocks()
         self.services = self._get_services()
 
     def nio(self):
@@ -95,24 +97,22 @@ class Instance(REST):
         return service
 
     def _get_blocks(self):
-        blocks_types = {}
-        for btype, template in self._get('blocks_types').items():
-            b = Block(btype, btype, instance=self)
-            b._load_template(btype, template)
-            blocks_types[btype] = b
-
         blocks = {}
         for bname, config in self._get('blocks').items():
             btype = config['type']
-            b = deepcopy(blocks_types[btype])
-            b._name = bname
+            b = Block(bname, btype, config)
+            #b = deepcopy(blocks_types[btype])
+            #b._name = bname
             b._instance = self
-            b._config.update(config, drop_unknown=True,
-                             drop_logger=self.droplog)
-            b._config['name'] = bname
+            #b._config['name'] = bname
             blocks[bname] = b
+        return blocks
 
-        return blocks_types, blocks
+    def _get_blocks_types(self):
+        blocks_types = {}
+        for btype, config in self._get('blocks_types').items():
+            blocks_types[btype] = config
+        return blocks_types
 
     def _get_services(self):
         services = {}
@@ -158,13 +158,3 @@ class Instance(REST):
             b.save()
         for s in self.services.items():
             s.save()
-
-    def DELETE_ALL(self):
-        """Deletes all blocks and services from an instance."""
-        blocks, services = self._get('blocks'), self._get('services')
-        for b in blocks:
-            self._delete('blocks/{}'.format(b))
-        for s in services:
-            self._get('services/{}/stop'.format(s))
-            self._delete('services/{}'.format(s))
-        self.reset()

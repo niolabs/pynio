@@ -9,15 +9,17 @@ def assertInstanceEqual(self, in1, in2):
     ser1 = {sname: s.config for (sname, s) in in1.services.items()}
     ser2 = {sname: s.config for (sname, s) in in2.services.items()}
     self.assertDictEqual(ser1, ser2)
-    blks1 = {bname: b.json() for (bname, b) in in1.blocks.items()}
-    blks2 = {bname: b.json() for (bname, b) in in2.blocks.items()}
+    blks1 = {bname: b.config for (bname, b) in in1.blocks.items()}
+    blks2 = {bname: b.config for (bname, b) in in2.blocks.items()}
     self.assertDictEqual(blks1, blks2)
 
 class MockInstance(Instance):
 
     def __init__(self, host='127.0.0.1', port=8181, creds=None):
         self._get_blocks = MagicMock()
-        self._get_blocks.return_value = {}, {}
+        self._get_blocks.return_value = {}
+        self._get_blocks_types = MagicMock()
+        self._get_blocks_types.return_value = {}
         self._get_services = MagicMock()
         self._get_services.return_value = {}
         super().__init__(host, port, creds)
@@ -47,36 +49,10 @@ class TestInstance(unittest.TestCase):
         i.add_service(Service(name))
         self.assertTrue(name in i.services)
 
-    def test_delete_all(self, *args):
-        names = ['one', 'two', 'three']
-        i = MockInstance()
-        i._get = MagicMock()
-        i._get.return_value = names
-        i._delete = MagicMock()
-
-        i.DELETE_ALL()
-
-        delete = ['blocks/{}'.format(n) for n in names]
-        delete.extend('services/{}'.format(n) for n in names)
-        get = ['blocks', 'services']
-        get.extend('services/{}/stop'.format(n) for n in names)
-
-        get_list = i._get.call_args_list
-        get_called = [get_list[n][0][0] for n in range(len(get_list))]
-        delete_list = i._delete.call_args_list
-        delete_called = [delete_list[n][0][0] for
-                            n in range(len(delete_list))]
-
-        self.assertEqual(i._get.call_count, 2 + len(names))
-        self.assertEqual(i._delete.call_count, len(names) * 2)
-        self.assertEqual(get_called, get)
-        self.assertEqual(delete_called, delete)
-
     def test_create_block(self):
         instance = mock_instance()
-        blk = instance.create_block('name', 'type')
-        self.assertFalse(instance.droplog.called)
-        self.assertDictEqual(config, blk.json())
+        blk = instance.create_block('name', 'type', config)
+        self.assertDictEqual(config, blk.config)
         self.assertIsInstance(blk, Block)
         self.assertIn(blk.name, instance.blocks)
         self.assertIn(blk, instance.blocks.values())
@@ -96,7 +72,7 @@ class TestInstance(unittest.TestCase):
         b2 = in2.add_block(b1)
         self.assertIsNot(b1, b2)
         self.assertIsNot(b1._instance, b2._instance)
-        self.assertDictEqual(b1.json(), b2.json())
+        self.assertDictEqual(b1.config, b2.config)
 
         # cannot overwrite
         with self.assertRaises(ValueError):
@@ -117,7 +93,7 @@ class TestInstance(unittest.TestCase):
         # test block
         self.assertIsNot(b1, b2)
         self.assertIsNot(b1._instance, b2._instance)
-        self.assertDictEqual(b1.json(), b2.json())
+        self.assertDictEqual(b1.config, b2.config)
 
         # test service
         self.assertIsNot(s1, s2)
@@ -146,18 +122,18 @@ class TestInstance(unittest.TestCase):
         self.assertNotIn(s3.name, in2.services)
 
         # unless overwritten
-        b1.config.value = 42
-        self.assertNotEqual(b1.config.value, b2.config.value)
+        b1.config['value'] = 42
+        self.assertNotEqual(b1.config['value'], b2.config.get('value'))
         s4 = in2.add_service(s3, overwrite=True, blocks=True)
         b4, b5 = s4.blocks
-        self.assertEqual(in2.blocks['b1'].config.value, 42)
+        self.assertEqual(in2.blocks['b1'].config['value'], 42)
 
         # test blocks
         s4_b1 = in2.blocks['b1']
         self.assertEqual(s4_b1.name, b2.name)
         self.assertIsNot(s4_b1, b2)  # the object has been replaced
         self.assertIs(s4_b1._instance, b2._instance)  # instance is the same
-        self.assertEqual(s4_b1.config.value, 42)
+        self.assertEqual(s4_b1.config['value'], 42)
 
         # test service
         self.assertIsNot(s3, s4)
@@ -174,13 +150,10 @@ class TestInstance(unittest.TestCase):
             c['value'] = n * 2
             c['name'] = name
             configs[name] = c
-
-        ins._get = lambda v: (templates if v == 'blocks_types' else configs if
-                              v == 'blocks' else throw(ValueError))
-        types, blocks = ins._get_blocks()
+        ins._get.return_value = configs
+        blocks = ins._get_blocks()
         [self.assertIsInstance(b, Block) for b in blocks.values()]
-        [self.assertIsInstance(b, Block) for b in types.values()]
-        self.assertDictEqual({n: b.json() for n, b in blocks.items()},
+        self.assertDictEqual({n: b.config for n, b in blocks.items()},
                               configs)
 
     def test_load_services(self):
