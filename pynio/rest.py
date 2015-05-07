@@ -17,8 +17,10 @@ class REST(object):
         self._creds = creds or ('User', 'User')
         self._url = 'http://{}:{}/{}'.format(host, port, '{}')
 
+    # TODO: adding kwargs allows qualification tests to work, it is left
+    # to figure out where the disconnect is
     def _get(self, endpoint, timeout=None, data=None, retry=0,
-             raw_response=False):
+             raw_response=False, **kwargs):
         '''Performs a get with some amounts of retrys
 
         Keyword Arguments:
